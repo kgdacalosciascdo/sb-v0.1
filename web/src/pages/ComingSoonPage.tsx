@@ -4,7 +4,11 @@ import { allNavigationItems } from '../routes/navigation'
 
 export function ComingSoonPage() {
   const location = useLocation()
-  const item = allNavigationItems.find((navigationItem) => navigationItem.path === location.pathname)
+  const item = allNavigationItems.find(
+    (navigationItem) =>
+      navigationItem.path === location.pathname ||
+      (location.pathname === '/home' && navigationItem.path === '/'),
+  )
   const label = item?.label ?? 'This workspace'
 
   return (

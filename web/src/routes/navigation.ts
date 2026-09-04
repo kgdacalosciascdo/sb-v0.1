@@ -15,11 +15,22 @@ import {
 } from 'lucide-react'
 import type { NavigationItem } from '../types/navigation'
 
+import dashboardIcon from '../assets/icons/dashboard.png'
+import cashierIcon from '../assets/icons/cashier.png'
+import cashHandIcon from '../assets/icons/cash-hand.png'
+import truckIcon from '../assets/icons/truck.png'
+import penIcon from '../assets/icons/pen.png'
+import cartonIcon from '../assets/icons/carton.png'
+import cashAccountsIcon from '../assets/icons/cash-accounts.png'
+import walletIcon from '../assets/icons/wallet.png'
+import { ReportsIcon } from '../components/common/ReportsIcon'
+
 export const homeNavigation: NavigationItem = {
   label: 'Home',
   path: '/',
   icon: House,
-  description: 'Return to the application home',
+  description: 'Application overview and welcome portal',
+  isComingSoon: true,
 }
 
 export const primaryNavigation: NavigationItem[] = [
@@ -27,12 +38,14 @@ export const primaryNavigation: NavigationItem[] = [
     label: 'Dashboard',
     path: '/dashboard',
     icon: LayoutDashboard,
+    imageIcon: dashboardIcon,
     description: 'Business overview and priorities',
   },
   {
     label: 'Sales & Receivables',
     path: '/sales',
     icon: ShoppingCart,
+    imageIcon: cashierIcon,
     description: 'Sales, billing, and customer balances',
     isComingSoon: true,
   },
@@ -40,6 +53,7 @@ export const primaryNavigation: NavigationItem[] = [
     label: 'Collections & Receipts',
     path: '/collections',
     icon: HandCoins,
+    imageIcon: cashHandIcon,
     description: 'Money received and customer collections',
     isComingSoon: true,
   },
@@ -47,6 +61,7 @@ export const primaryNavigation: NavigationItem[] = [
     label: 'Purchases & Payables',
     path: '/purchases',
     icon: Truck,
+    imageIcon: truckIcon,
     description: 'Purchasing and supplier obligations',
     isComingSoon: true,
   },
@@ -54,6 +69,7 @@ export const primaryNavigation: NavigationItem[] = [
     label: 'Payments & Disbursements',
     path: '/payments',
     icon: ClipboardList,
+    imageIcon: penIcon,
     description: 'Outgoing payments and disbursements',
     isComingSoon: true,
   },
@@ -61,6 +77,7 @@ export const primaryNavigation: NavigationItem[] = [
     label: 'Inventory',
     path: '/inventory',
     icon: Package,
+    imageIcon: cartonIcon,
     description: 'Stock availability and movement',
     isComingSoon: true,
   },
@@ -68,6 +85,7 @@ export const primaryNavigation: NavigationItem[] = [
     label: 'Cash Accounts',
     path: '/cash-accounts',
     icon: Landmark,
+    imageIcon: cashAccountsIcon,
     description: 'Cash locations, balances, and movement',
     isComingSoon: true,
   },
@@ -75,13 +93,13 @@ export const primaryNavigation: NavigationItem[] = [
     label: 'Expenses',
     path: '/expenses',
     icon: WalletCards,
+    imageIcon: walletIcon,
     description: 'Operating costs and evidence',
-    isComingSoon: true,
   },
   {
     label: 'Reports',
     path: '/reports',
-    icon: BarChart3,
+    icon: ReportsIcon,
     description: 'Governed reports and analytics',
     isComingSoon: true,
   },
