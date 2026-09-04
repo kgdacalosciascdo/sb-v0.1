@@ -144,7 +144,7 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
 
           <div className="mx-4 my-3 border-t border-white/25" />
 
-          <section className={cn('mx-3 rounded-2xl bg-white p-1 shadow-lg shadow-brand-800/10', isCollapsed && 'bg-transparent p-0 shadow-none')}>
+          <section className={cn('mx-3 rounded-2xl bg-white p-1 shadow-lg shadow-brand-800/10', isCollapsed && '!bg-transparent !p-0 !shadow-none')}>
             <h2 className={cn('px-3 pb-2 pt-2 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-ink-500', isCollapsed && 'sr-only')}>Main modules</h2>
             <div className="space-y-0.5">{mainModuleNavigation.map(renderModuleLink)}</div>
           </section>
