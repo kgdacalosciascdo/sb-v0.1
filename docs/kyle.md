@@ -115,3 +115,26 @@ Reduce Sidebar text and vertical spacing so the full navigation is less likely t
 ### Coordination Notes
 - `docs/jhonel.md` was read for coordination and remains unmodified.
 - This touches the shared Sidebar styling and should be reviewed alongside other shell changes.
+
+## 2026-09-04 — Collapsed Sidebar Icon Contrast Fix
+
+### Objective
+Restore module icon visibility when the Sidebar is collapsed.
+
+### Completed
+- Forced the collapsed Main Modules container to use a transparent background instead of the expanded white panel background.
+- Preserved the white Main Modules panel in expanded mode and the existing collapsed icon navigation.
+
+### Files / Areas Changed
+- `web/src/components/layout/Sidebar/Sidebar.tsx`
+
+### Architecture / Decisions
+- The issue was caused by Tailwind utility ordering: the base `bg-white` panel class won over the conditional transparent class, leaving white icons on white.
+- The collapsed override now uses important utility classes for background, padding, and shadow only in collapsed mode.
+
+### Validation
+- `cd web && npm run lint` — passed.
+- `cd web && npm run build` — passed.
+
+### Coordination Notes
+- `docs/jhonel.md` was read for coordination and remains unmodified.
