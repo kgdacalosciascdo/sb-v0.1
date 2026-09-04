@@ -21,15 +21,18 @@ export function AppRouter() {
 
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
-            <Route index element={<Navigate replace to="/dashboard" />} />
+            <Route index element={<ComingSoonPage />} />
+            <Route path="/home" element={<ComingSoonPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
-            {comingSoonItems.map((item) => (
-              <Route element={<ComingSoonPage />} key={item.path} path={item.path} />
-            ))}
+            {comingSoonItems
+              .filter((item) => item.path !== '/')
+              .map((item) => (
+                <Route element={<ComingSoonPage />} key={item.path} path={item.path} />
+              ))}
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate replace to="/" />} />
+        <Route path="*" element={<Navigate replace to="/dashboard" />} />
       </Routes>
     </BrowserRouter>
   )

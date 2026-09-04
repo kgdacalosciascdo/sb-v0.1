@@ -32,9 +32,9 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
         aria-label={isCollapsed ? item.label : undefined}
         className={({ isActive }) =>
           cn(
-            'group flex min-h-10 items-center gap-2.5 rounded-xl px-3 text-sm font-medium text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-600',
+            'group flex min-h-10 items-center gap-3 rounded-lg px-3 text-[13.5px] font-medium text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0288d1]',
             isCollapsed ? 'justify-center px-2' : 'justify-start',
-            isActive ? 'bg-white/15 text-white' : 'hover:bg-white/10',
+            isActive ? 'bg-white/20 text-white font-semibold' : 'text-white/90',
           )
         }
         end
@@ -43,9 +43,9 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
         title={isCollapsed ? item.label : undefined}
         to={item.path}
       >
-        <Icon aria-hidden="true" className="shrink-0" size={20} strokeWidth={1.9} />
+        {Icon && <Icon aria-hidden="true" className="size-5 shrink-0 text-white" strokeWidth={1.9} />}
         <span className={cn('truncate', isCollapsed && 'sr-only')}>{item.label}</span>
-        {!isCollapsed && <ChevronRight aria-hidden="true" className="ml-auto" size={18} />}
+        {!isCollapsed && <ChevronRight aria-hidden="true" className="ml-auto size-4 text-white/80" />}
       </NavLink>
     )
   }
@@ -58,26 +58,47 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
         aria-label={isCollapsed ? item.label : undefined}
         className={({ isActive }) =>
           cn(
-            'group relative flex min-h-11 items-center gap-3 rounded-xl px-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-inset',
-            isCollapsed ? 'justify-center px-2' : 'justify-start',
-            isCollapsed
-              ? isActive
-                ? 'bg-brand-100 text-brand-800'
-                : 'text-white hover:bg-white/10 hover:text-white'
-              : isActive
-                ? 'bg-brand-100 text-ink-900'
-                : 'text-ink-900 hover:bg-brand-50',
+            'group relative flex min-h-[50px] items-center gap-3.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-inset',
+            isCollapsed ? 'justify-center px-2 py-2' : 'px-4 py-2',
+            isActive
+              ? 'bg-[#aee2f8] text-slate-900 font-semibold'
+              : 'text-slate-700 font-medium hover:bg-sky-50 hover:text-slate-950',
           )
         }
-        end
+        end={item.path === '/dashboard'}
         key={item.path}
         onClick={onNavigate}
         title={isCollapsed ? item.label : undefined}
         to={item.path}
       >
-        <Icon aria-hidden="true" className="shrink-0" size={21} strokeWidth={1.9} />
-        <span className={cn('truncate', isCollapsed && 'sr-only')}>{item.label}</span>
-        {!isCollapsed && <ChevronRight aria-hidden="true" className="ml-auto text-ink-500" size={18} />}
+        {({ isActive }) => (
+          <>
+            <div className="flex size-9 shrink-0 items-center justify-center">
+              {item.imageIcon ? (
+                <img
+                  alt=""
+                  aria-hidden="true"
+                  className="size-9 shrink-0 object-contain drop-shadow-xs scale-150"
+                  src={item.imageIcon}
+                />
+              ) : Icon ? (
+                <Icon aria-hidden="true" className="size-8 shrink-0" />
+              ) : null}
+            </div>
+
+            <span className={cn('truncate text-[14px] leading-tight', isCollapsed && 'sr-only')}>
+              {item.label}
+            </span>
+
+            {/* Active Indicator Bar on the right edge */}
+            {isActive && (
+              <span
+                aria-hidden="true"
+                className="absolute inset-y-0 right-0 w-3 bg-[#00c9a7]"
+              />
+            )}
+          </>
+        )}
       </NavLink>
     )
   }
@@ -90,9 +111,9 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
         aria-label={isCollapsed ? item.label : undefined}
         className={({ isActive }) =>
           cn(
-            'group flex min-h-10 items-center gap-2.5 rounded-xl px-3 text-xs font-medium text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-600',
+            'group flex min-h-10 items-center gap-3 rounded-lg px-3 text-[13.5px] font-medium text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-600',
             isCollapsed ? 'justify-center px-2' : 'justify-start',
-            isActive ? 'bg-white/15 text-white' : 'hover:bg-white/10',
+            isActive && 'bg-white/15 text-white font-semibold',
           )
         }
         end
@@ -101,34 +122,46 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
         title={isCollapsed ? item.label : undefined}
         to={item.path}
       >
-        <Icon aria-hidden="true" className="shrink-0" size={20} strokeWidth={1.9} />
+        {Icon && <Icon aria-hidden="true" className="size-5 shrink-0 text-white" strokeWidth={1.8} />}
         <span className={cn('truncate', isCollapsed && 'sr-only')}>{item.label}</span>
-        {!isCollapsed && <ChevronRight aria-hidden="true" className="ml-auto" size={18} />}
+        {!isCollapsed && <ChevronRight aria-hidden="true" className="ml-auto size-4 text-white/80" />}
       </NavLink>
     )
   }
 
   return (
     <>
+      {/* Mobile Backdrop */}
       <div
         aria-hidden="true"
-        className={cn('fixed inset-0 z-40 bg-ink-900/40 transition-opacity lg:hidden', isOpen ? 'opacity-100' : 'pointer-events-none opacity-0')}
+        className={cn(
+          'fixed inset-0 z-40 bg-ink-900/50 backdrop-blur-xs transition-opacity lg:hidden',
+          isOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
+        )}
         onClick={onClose}
       />
+
+      {/* Main Sidebar */}
       <aside
         aria-label="Main navigation"
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col bg-brand-600 text-white shadow-2xl transition-[width,transform] duration-300 lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col bg-[#0288d1] text-white shadow-2xl transition-[width,transform] duration-300 lg:translate-x-0',
           isOpen && 'translate-x-0',
           isCollapsed ? 'lg:w-[5.5rem]' : 'lg:w-72',
         )}
         id="app-sidebar"
       >
-        <div className={cn('flex min-h-[4.5rem] items-center border-b border-white/15 px-5', isCollapsed && 'justify-center px-3')}>
+        {/* Brand Header */}
+        <div
+          className={cn(
+            'flex min-h-[4.25rem] items-center px-4 pt-3 pb-2',
+            isCollapsed ? 'justify-center px-2' : 'justify-start',
+          )}
+        >
           <BrandMark compact={isCollapsed} />
           <button
             aria-label="Close navigation menu"
-            className="ml-auto grid size-9 place-items-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white lg:hidden"
+            className="ml-auto grid size-8 place-items-center rounded-lg text-white/80 transition hover:bg-white/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white lg:hidden"
             onClick={onClose}
             type="button"
           >
@@ -136,36 +169,54 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
           </button>
         </div>
 
-        <nav className="min-h-0 flex-1 overflow-y-auto py-2" aria-label="SimpleBIZ modules">
-          <div className="space-y-0.5 px-3">
+        {/* Navigation Content */}
+        <nav className="min-h-0 flex-1 overflow-y-auto px-3.5 py-2 space-y-3" aria-label="SimpleBIZ modules">
+          {/* Top Links outside white box (Home & Dashboard) */}
+          <div className="space-y-0.5">
             {renderTopLink(homeNavigation)}
             {renderTopLink(primaryNavigation[0])}
           </div>
 
-          <div className="mx-4 my-3 border-t border-white/25" />
+          {/* Main Modules Inside Crisp White Container */}
+          <section
+            className={cn(
+              'overflow-hidden bg-white shadow-sm',
+              isCollapsed && 'rounded-xl p-1',
+            )}
+          >
+            <div className="divide-y divide-slate-100/60">
+              {mainModuleNavigation.map(renderModuleLink)}
+            </div>
 
-          <section className={cn('mx-3 rounded-2xl bg-white p-1 shadow-lg shadow-brand-800/10', isCollapsed && '!bg-transparent !p-0 !shadow-none')}>
-            <h2 className={cn('px-3 pb-2 pt-2 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-ink-500', isCollapsed && 'sr-only')}>Main modules</h2>
-            <div className="space-y-0.5">{mainModuleNavigation.map(renderModuleLink)}</div>
+            {/* More > Action Footer */}
+            {!isCollapsed && (
+              <div className="flex items-center justify-end px-3.5 py-2 text-xs font-normal text-slate-500 hover:text-slate-700 cursor-pointer transition select-none">
+                <span className="flex items-center gap-0.5">
+                  More <ChevronRight aria-hidden="true" className="size-3.5 inline" />
+                </span>
+              </div>
+            )}
           </section>
 
-          <div className="mx-4 my-3 border-t border-white/25" />
-
-          <div className="space-y-0.5 px-3">{secondaryNavigation.map(renderSecondaryLink)}</div>
+          {/* Secondary Menus (Master Registries, Settings, Help) */}
+          <div className="space-y-0.5 pt-1">
+            {secondaryNavigation.map(renderSecondaryLink)}
+          </div>
         </nav>
 
-        <div className="border-t border-white/25 p-3">
+        {/* Bottom Footer / Logout */}
+        <div className="p-3">
           <button
-            aria-label={isCollapsed ? 'Log out' : undefined}
+            aria-label={isCollapsed ? 'Logout' : undefined}
             className={cn(
-              'flex min-h-10 w-full items-center gap-2.5 rounded-xl px-3 text-xs font-medium text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-600',
+              'flex min-h-10 w-full items-center gap-3 rounded-lg px-3 text-[13.5px] font-medium text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0288d1]',
               isCollapsed ? 'justify-center px-2' : 'justify-start',
             )}
             onClick={handleLogout}
-            title={isCollapsed ? 'Log out' : undefined}
+            title={isCollapsed ? 'Logout' : undefined}
             type="button"
           >
-            <LogOut aria-hidden="true" className="shrink-0" size={20} />
+            <LogOut aria-hidden="true" className="size-5 shrink-0 text-white" strokeWidth={1.8} />
             <span className={cn(isCollapsed && 'sr-only')}>Logout</span>
           </button>
         </div>
