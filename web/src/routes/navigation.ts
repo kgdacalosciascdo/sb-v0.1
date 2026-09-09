@@ -29,7 +29,7 @@ export const homeNavigation: NavigationItem = {
   path: "/",
   icon: House,
   description: "Application overview and welcome portal",
-  isComingSoon: true,
+  isComingSoon: false,
 };
 
 export const primaryNavigation: NavigationItem[] = [

@@ -22,7 +22,7 @@ export function AppShell() {
           onMenuClick={() => setIsSidebarOpen(true)}
           onToggleSidebar={() => setIsSidebarCollapsed((collapsed) => !collapsed)}
         />
-        <main className="mx-auto min-h-[calc(100vh-4.5rem)] max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8" id="main-content">
+        <main className="w-full min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)] px-4 py-3.5 sm:px-8 sm:py-4 lg:px-10 xl:px-12" id="main-content">
           <Outlet />
         </main>
       </div>
