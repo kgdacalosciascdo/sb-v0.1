@@ -5,6 +5,8 @@ import { ComingSoonPage } from '../../pages/ComingSoonPage'
 import { HomePage } from '../../pages/home/HomePage'
 import { LoginPage } from '../../pages/auth/LoginPage'
 import { DashboardPage } from '../../pages/dashboard/DashboardPage'
+import { MasterRegistriesPage } from '../../pages/master-registries/MasterRegistriesPage'
+import { SettingsPage } from '../../pages/settings/SettingsPage'
 import { allNavigationItems } from '../../routes/navigation'
 import { ProtectedRoute, PublicOnlyRoute } from './guards'
 
@@ -25,6 +27,8 @@ export function AppRouter() {
             <Route index element={<HomePage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/master-registries" element={<MasterRegistriesPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             {comingSoonItems
               .filter((item) => item.path !== '/')
               .map((item) => (

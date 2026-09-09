@@ -1,0 +1,45 @@
+/* Scoped entrance transition for the Master Registries workspace. */
+
+@keyframes masterRegistriesFadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes masterRegistriesScaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.98) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-master-registries-header {
+  animation: masterRegistriesFadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+}
+
+.animate-master-registries-grid {
+  animation: masterRegistriesScaleIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+}
+
+.animate-master-registries-summary {
+  animation: masterRegistriesFadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-master-registries-header,
+  .animate-master-registries-grid,
+  .animate-master-registries-summary {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

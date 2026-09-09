@@ -1,0 +1,40 @@
+/* Scoped entrance transition for the Settings & Administration workspace. */
+
+@keyframes settingsFadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes settingsScaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.98) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-settings-header {
+  animation: settingsFadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+}
+
+.animate-settings-grid {
+  animation: settingsScaleIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-settings-header,
+  .animate-settings-grid {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

@@ -110,14 +110,14 @@ export const secondaryNavigation: NavigationItem[] = [
     path: "/master-registries",
     icon: Database,
     description: "Shared operational records",
-    isComingSoon: true,
+    isComingSoon: false,
   },
   {
     label: "Settings",
     path: "/settings",
     icon: Settings,
     description: "Configuration and administration",
-    isComingSoon: true,
+    isComingSoon: false,
   },
   {
     label: "Help",
