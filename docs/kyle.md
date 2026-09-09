@@ -85,6 +85,158 @@ Adjust the application shell Sidebar to match the supplied navigation reference 
 - This change touches shared shell files and should be reviewed before parallel edits to Sidebar, Navbar, AppShell, or navigation configuration.
 - `docs/jhonel.md` was read for coordination and remains unmodified.
 
+## 2026-09-09 — Master Registries Card Size Refinement
+
+### Objective
+Reduce the Master Registries card scale after the previous Dashboard-sized treatment felt too large, while keeping Settings card sizing unchanged.
+
+### Completed
+- Reduced Master Registries cards to a moderate `230px` mobile / `250px` small-screen minimum height.
+- Reduced registry icon circles, card typography, spacing, and action buttons proportionally.
+- Left Settings & Administration card dimensions and color treatment unchanged.
+
+### Files / Areas Changed
+- `web/src/pages/master-registries/MasterRegistriesPage.tsx`
+
+### Validation
+- `cd web && npm run lint` — passed.
+- `cd web && npm run build` — passed.
+
+### Coordination Notes
+- `docs/jhonel.md` was read for coordination and remains unmodified.
+
+## 2026-09-09 — Master Registries Summary Count-Up
+
+### Objective
+Animate the Master Registries summary metrics during the page entrance transition so each value counts from zero to its exact final number, matching the existing Dashboard number treatment.
+
+### Completed
+- Reused the existing `web/src/hooks/useCountUp.ts` hook.
+- Converted Registry Summary values to numeric targets so they render with exact comma-separated final values.
+- Added staggered count-up delays for Total Records, Active Records, Inactive Records, and Records Updated Today.
+- Kept the change limited to the Master Registries summary; Settings has no numeric summary metrics requiring this behavior.
+
+### Files / Areas Changed
+- `web/src/pages/master-registries/MasterRegistriesPage.tsx`
+- `docs/kyle.md`
+
+### Architecture / Decisions
+- The count-up uses the same easing, requestAnimationFrame behavior, formatting, and final-value correction already used by Dashboard.
+- No new dependency or backend behavior was introduced.
+
+### Validation
+- `cd web && npm run lint` — passed.
+- `cd web && npm run build` — passed.
+
+### Coordination Notes
+- `docs/jhonel.md` was read for coordination and was not modified.
+
+## 2026-09-09 — Master Registries and Settings Entrance Transitions and Page Handoffs
+
+### Objective
+Match the slight staged entrance transition already used by Home and Dashboard on the Master Registries and Settings & Administration landing pages, and create Kyle-owned page documentation for both pages.
+
+### Completed
+- Inspected the existing Home and Dashboard animation classes and reused their fade-up/scale-in timing pattern.
+- Added a scoped entrance transition to Master Registries:
+  - Header fades upward first.
+  - Registry and utility content scales/fades in next.
+  - Registry Summary fades in as the final step.
+- Added a scoped entrance transition to Settings & Administration:
+  - Header fades upward first.
+  - Settings workspace grid scales/fades in next.
+- Added `prefers-reduced-motion` overrides so users who reduce motion see the content immediately.
+- Created `kyle-md/master-registries.md`.
+- Created `kyle-md/settings-administration.md`.
+
+### Files / Areas Changed
+- `web/src/pages/master-registries/MasterRegistriesPage.tsx`
+- `web/src/pages/master-registries/masterRegistries.css`
+- `web/src/pages/settings/SettingsPage.tsx`
+- `web/src/pages/settings/settings.css`
+- `kyle-md/master-registries.md`
+- `kyle-md/settings-administration.md`
+- `docs/kyle.md`
+
+### Architecture / Decisions
+- The transitions are page-scoped CSS, consistent with the existing Home and Dashboard implementation, and do not add a dependency.
+- The page documentation records the route, governing MDS document, visual scope, transition behavior, and frontend-only boundary.
+- The landing pages remain static presentation surfaces; no business module functionality was implemented.
+
+### Validation
+- `cd web && npm run lint` — passed.
+- `cd web && npm run build` — passed.
+
+### Coordination Notes
+- `docs/jhonel.md` was read for coordination and was not modified; it is empty in this repository.
+- Existing Home/Dashboard implementation files and `docs/jhonel-md/home.md` / `docs/jhonel-md/dashboard.md` were used as the page documentation and transition reference.
+
+## 2026-09-09 — Master Registries and Settings Workspace Frontends
+
+### Objective
+Create frontend-only Master Registries and Settings & Administration workspace screens using the supplied UI references while preserving Jhonel's updated Home and Dashboard work.
+
+### Completed
+- Inspected the current Home, Dashboard, AppShell, Sidebar, Navbar, navigation, and available icon assets before implementation.
+- Added the `/master-registries` workspace: eight registry cards, static Quick Actions, Registry Summary, and Data Tools panels styled to match the supplied reference.
+- Added the `/settings` workspace: administration cards and a static Recent Changes panel styled to match the supplied reference.
+- Reused the current application shell and available module PNG icon assets where appropriate.
+- Enabled the existing Master Registries and Settings sidebar navigation items to open their new pages.
+
+### Files / Areas Changed
+- `web/src/pages/master-registries/MasterRegistriesPage.tsx`
+- `web/src/pages/settings/SettingsPage.tsx`
+- `web/src/app/router/index.tsx`
+- `web/src/routes/navigation.ts`
+
+### Architecture / Decisions
+- Both pages are route-level frontend views that use typed static card definitions and existing shell styling conventions.
+- Buttons, quick actions, registry counts, recent changes, and data-tool controls are presentation-only; they do not execute CRUD, imports, exports, settings changes, or other module processing.
+- Home and Dashboard files were inspected but not modified.
+
+### Dependencies / Configuration
+- No packages or configuration files changed.
+
+### Validation
+- `cd web && npm run lint` — passed.
+- `cd web && npm run build` — passed.
+
+### Deferred / Not Implemented
+- No backend module work, APIs, persistence, CRUD, authentication changes, registry management, settings administration, import/export processing, or audit processing was added.
+
+### Coordination Notes
+- `docs/jhonel.md` was read for coordination and remains unmodified; it is currently empty despite the existing Home/Dashboard frontend changes in the worktree.
+- Future changes to the two new pages should preserve the static-UI-only boundary until the corresponding governed module phase is authorized.
+
+## 2026-09-09 — Registry and Settings Card Scale Alignment
+
+### Objective
+Increase Master Registries card size to match Dashboard action cards and adjust Settings card surfaces to match the supplied UI references.
+
+### Completed
+- Enlarged Master Registries cards to Dashboard-like height, icon area, typography, spacing, and button sizing.
+- Enlarged Settings cards to the same workspace-card scale.
+- Changed Settings cards from translucent `sky-100` styling to a defined pale-blue surface with a subtle blue border and matching hover state.
+- Kept the existing Recent Changes panel aligned with the enlarged Settings cards.
+
+### Files / Areas Changed
+- `web/src/pages/master-registries/MasterRegistriesPage.tsx`
+- `web/src/pages/settings/SettingsPage.tsx`
+
+### Architecture / Decisions
+- This is a presentation-only adjustment based on the supplied Master Registries, Settings, and Dashboard UI references.
+- Static cards and actions remain frontend-only; no module processing or persistence was introduced.
+
+### Dependencies / Configuration
+- No dependency or configuration changes.
+
+### Validation
+- `cd web && npm run lint` — passed.
+- `cd web && npm run build` — passed.
+
+### Coordination Notes
+- `docs/jhonel.md` was read for coordination and remains unmodified.
+
 ## 2026-09-04 — Sidebar Density Adjustment
 
 ### Objective
