@@ -32,9 +32,11 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
         aria-label={isCollapsed ? item.label : undefined}
         className={({ isActive }) =>
           cn(
-            'group flex min-h-10 items-center gap-3 rounded-lg px-3 text-[13.5px] font-medium text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0288d1]',
-            isCollapsed ? 'justify-center px-2' : 'justify-start',
-            isActive ? 'bg-white/20 text-white font-semibold' : 'text-white/90',
+            'group relative flex min-h-[42px] items-center gap-3.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-inset',
+            isCollapsed ? 'justify-center px-2 py-2' : 'px-4 py-2',
+            isActive
+              ? 'bg-[#38bdf8]/35 text-white font-medium'
+              : 'text-white/90 hover:bg-white/10 hover:text-white',
           )
         }
         end
@@ -43,9 +45,19 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
         title={isCollapsed ? item.label : undefined}
         to={item.path}
       >
-        {Icon && <Icon aria-hidden="true" className="size-5 shrink-0 text-white" strokeWidth={1.9} />}
-        <span className={cn('truncate', isCollapsed && 'sr-only')}>{item.label}</span>
-        {!isCollapsed && <ChevronRight aria-hidden="true" className="ml-auto size-4 text-white/80" />}
+        {({ isActive }) => (
+          <>
+            {Icon && <Icon aria-hidden="true" className="size-5 shrink-0 text-white" strokeWidth={1.9} />}
+            <span className={cn('truncate text-[14px]', isCollapsed && 'sr-only')}>{item.label}</span>
+            {/* Active Indicator Bar on the right edge */}
+            {isActive && (
+              <span
+                aria-hidden="true"
+                className="absolute inset-y-0 right-0 w-2.5 bg-[#00c9a7]"
+              />
+            )}
+          </>
+        )}
       </NavLink>
     )
   }
@@ -111,9 +123,11 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
         aria-label={isCollapsed ? item.label : undefined}
         className={({ isActive }) =>
           cn(
-            'group flex min-h-10 items-center gap-3 rounded-lg px-3 text-[13.5px] font-medium text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-600',
-            isCollapsed ? 'justify-center px-2' : 'justify-start',
-            isActive && 'bg-white/15 text-white font-semibold',
+            'group relative flex min-h-[40px] items-center gap-3.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-inset',
+            isCollapsed ? 'justify-center px-2 py-1.5' : 'px-4 py-1.5',
+            isActive
+              ? 'bg-[#38bdf8]/35 text-white font-medium'
+              : 'text-white/90 hover:bg-white/10 hover:text-white',
           )
         }
         end
@@ -122,9 +136,19 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
         title={isCollapsed ? item.label : undefined}
         to={item.path}
       >
-        {Icon && <Icon aria-hidden="true" className="size-5 shrink-0 text-white" strokeWidth={1.8} />}
-        <span className={cn('truncate', isCollapsed && 'sr-only')}>{item.label}</span>
-        {!isCollapsed && <ChevronRight aria-hidden="true" className="ml-auto size-4 text-white/80" />}
+        {({ isActive }) => (
+          <>
+            {Icon && <Icon aria-hidden="true" className="size-5 shrink-0 text-white" strokeWidth={1.8} />}
+            <span className={cn('truncate text-[13.5px]', isCollapsed && 'sr-only')}>{item.label}</span>
+            {/* Active Indicator Bar on the right edge */}
+            {isActive && (
+              <span
+                aria-hidden="true"
+                className="absolute inset-y-0 right-0 w-2.5 bg-[#00c9a7]"
+              />
+            )}
+          </>
+        )}
       </NavLink>
     )
   }
@@ -154,7 +178,7 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
         {/* Brand Header */}
         <div
           className={cn(
-            'flex min-h-[4.25rem] items-center px-4 pt-3 pb-2',
+            'flex min-h-14 sm:min-h-16 items-center px-4',
             isCollapsed ? 'justify-center px-2' : 'justify-start',
           )}
         >
@@ -170,7 +194,7 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
         </div>
 
         {/* Navigation Content */}
-        <nav className="min-h-0 flex-1 overflow-y-auto px-3.5 py-2 space-y-3" aria-label="SimpleBIZ modules">
+        <nav className="min-h-0 flex-1 overflow-y-auto py-2 space-y-3" aria-label="SimpleBIZ modules">
           {/* Top Links outside white box (Home & Dashboard) */}
           <div className="space-y-0.5">
             {renderTopLink(homeNavigation)}
@@ -178,25 +202,27 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
           </div>
 
           {/* Main Modules Inside Crisp White Container */}
-          <section
-            className={cn(
-              'overflow-hidden bg-white shadow-sm',
-              isCollapsed && 'rounded-xl p-1',
-            )}
-          >
-            <div className="divide-y divide-slate-100/60">
-              {mainModuleNavigation.map(renderModuleLink)}
-            </div>
-
-            {/* More > Action Footer */}
-            {!isCollapsed && (
-              <div className="flex items-center justify-end px-3.5 py-2 text-xs font-normal text-slate-500 hover:text-slate-700 cursor-pointer transition select-none">
-                <span className="flex items-center gap-0.5">
-                  More <ChevronRight aria-hidden="true" className="size-3.5 inline" />
-                </span>
+          <div className="px-3.5">
+            <section
+              className={cn(
+                'overflow-hidden bg-white shadow-sm',
+                isCollapsed && 'rounded-xl p-1',
+              )}
+            >
+              <div className="divide-y divide-slate-100/60">
+                {mainModuleNavigation.map(renderModuleLink)}
               </div>
-            )}
-          </section>
+
+              {/* More > Action Footer */}
+              {!isCollapsed && (
+                <div className="flex items-center justify-end px-3.5 py-2 text-xs font-normal text-slate-500 hover:text-slate-700 cursor-pointer transition select-none">
+                  <span className="flex items-center gap-0.5">
+                    More <ChevronRight aria-hidden="true" className="size-3.5 inline" />
+                  </span>
+                </div>
+              )}
+            </section>
+          </div>
 
           {/* Secondary Menus (Master Registries, Settings, Help) */}
           <div className="space-y-0.5 pt-1">

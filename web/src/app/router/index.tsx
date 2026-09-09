@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from '../../layouts/AppLayout'
 import { AuthLayout } from '../../layouts/AuthLayout'
 import { ComingSoonPage } from '../../pages/ComingSoonPage'
+import { HomePage } from '../../pages/home/HomePage'
 import { LoginPage } from '../../pages/auth/LoginPage'
 import { DashboardPage } from '../../pages/dashboard/DashboardPage'
 import { allNavigationItems } from '../../routes/navigation'
@@ -21,8 +22,8 @@ export function AppRouter() {
 
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
-            <Route index element={<ComingSoonPage />} />
-            <Route path="/home" element={<ComingSoonPage />} />
+            <Route index element={<HomePage />} />
+            <Route path="/home" element={<HomePage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             {comingSoonItems
               .filter((item) => item.path !== '/')
