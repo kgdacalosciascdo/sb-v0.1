@@ -12,56 +12,48 @@ interface AttentionItem {
 
 const ATTENTION_ITEMS: AttentionItem[] = [
   {
-    id: 'customer-balances',
+    id: 'reconciliation-needed',
     count: 5,
-    badgeColor: 'bg-[#e53935] text-white',
-    title: 'Overdue customer balances',
-    subtitle: '₱18,750 requires follow-up',
-    href: '#overdue-customers',
+    badgeColor: 'bg-red-500 text-white',
+    title: 'Reconciliation Needed',
+    subtitle: '5 transactions totaling ₱5,750 are unmatched.',
+    href: '#reconciliation-needed',
   },
   {
-    id: 'cash-shortages',
+    id: 'cash-count-variances',
     count: 1,
-    badgeColor: 'bg-[#e53935] text-white',
-    title: 'Cash remittance shortages / overages',
-    subtitle: '₱500 cash shortage discovered',
-    href: '#cash-shortages',
+    badgeColor: 'bg-red-500 text-white',
+    title: 'Cash Count Variances',
+    subtitle: 'Petty Cash is ₱1,250 short against the recorded balance.',
+    href: '#cash-count-variances',
   },
   {
-    id: 'stocks-reorder',
+    id: 'low-balance-account',
+    count: 1,
+    badgeColor: 'bg-amber-500 text-white',
+    title: 'Low-balance Account',
+    subtitle: 'Petty Cash has ₱2,700 available — below the ₱5,000 minimum.',
+    href: '#low-balance-account',
+  },
+  {
+    id: 'pending-transfers',
     count: 7,
-    badgeColor: 'bg-[#e53935] text-white',
-    title: 'Stocks due for reorder',
-    subtitle: '5 items are below the reorder level',
-    href: '#stocks-reorder',
+    badgeColor: 'bg-slate-500 text-white',
+    title: 'Pending Transfers / Confirmation',
+    subtitle: '7 transfers totaling ₱43,500 are awaiting confirmation.',
+    href: '#pending-transfers',
   },
   {
-    id: 'supplier-balances',
+    id: 'checks-due-funding',
     count: 3,
-    badgeColor: 'bg-[#e53935] text-white',
-    title: 'Overdue supplier balances',
-    subtitle: '₱12,456 needs to be paid',
-    href: '#overdue-suppliers',
-  },
-  {
-    id: 'sales-return',
-    count: 1,
-    badgeColor: 'bg-[#f57c00] text-white',
-    title: 'Sales return',
-    subtitle: '₱1,000 worth of item is returned',
-    href: '#sales-return',
-  },
-  {
-    id: 'voided-sales',
-    count: 7,
-    badgeColor: 'bg-[#78909c] text-white',
-    title: 'Voided sales',
-    subtitle: '₱300 worth of sales transaction is voided',
-    href: '#voided-sales',
+    badgeColor: 'bg-slate-500 text-white',
+    title: 'Checks Due for Funding',
+    subtitle: '3 checks totaling ₱50,580 are due within the next 7 days.',
+    href: '#checks-due-funding',
   },
 ]
 
-export function NeedsAttentionCard() {
+export function CashAccountsNeedsAttentionCard() {
   const { isExpanded, isFullHeight, toggle } = useCardCollapse(true)
 
   return (
@@ -88,7 +80,7 @@ export function NeedsAttentionCard() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-normal text-slate-500">24 items</span>
+            <span className="text-xs font-normal text-slate-500">17 items</span>
             <button
               type="button"
               onClick={(e) => {
@@ -96,7 +88,7 @@ export function NeedsAttentionCard() {
                 toggle()
               }}
               aria-label={isExpanded ? 'Collapse Needs Attention' : 'Expand Needs Attention'}
-              className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+              className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
             >
               <ChevronDown
                 className={`size-4 transition-transform duration-300 ease-in-out ${
@@ -107,7 +99,7 @@ export function NeedsAttentionCard() {
           </div>
         </div>
 
-        {/* Collapsible Content Container with Smooth Animation */}
+        {/* Collapsible Content Container */}
         <div
           className={`card-collapse-grid ${
             isExpanded ? 'is-expanded' : 'is-collapsed'
@@ -122,7 +114,7 @@ export function NeedsAttentionCard() {
                   href={item.href}
                   className="group flex items-start gap-2.5 py-0.5 transition hover:opacity-85"
                 >
-                  {/* Perfect Solid Circular Count Badge */}
+                  {/* Circular Count Badge */}
                   <span
                     className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold leading-none shadow-2xs ${item.badgeColor}`}
                   >
@@ -130,9 +122,9 @@ export function NeedsAttentionCard() {
                   </span>
 
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center text-[11.5px] font-bold text-slate-900 group-hover:text-[#0288d1]">
+                    <div className="flex items-center text-[11.5px] font-bold text-slate-900 group-hover:text-lime-800">
                       <span className="truncate">{item.title}</span>
-                      <ChevronRight className="size-3 shrink-0 ml-0.5 text-slate-400 group-hover:translate-x-0.5 group-hover:text-[#0288d1] transition" />
+                      <ChevronRight className="size-3 shrink-0 ml-0.5 text-slate-400 group-hover:translate-x-0.5 group-hover:text-lime-800 transition" />
                     </div>
                     <p className="text-[10px] text-slate-500 leading-none truncate mt-0.5">
                       {item.subtitle}
@@ -145,7 +137,7 @@ export function NeedsAttentionCard() {
             {/* Footer link */}
             <div className="mt-2 text-right">
               <a
-                href="#all-attention-items"
+                href="#all-cash-attention"
                 className="text-[11px] font-medium text-[#0288d1] transition hover:underline"
               >
                 View all
@@ -157,4 +149,3 @@ export function NeedsAttentionCard() {
     </div>
   )
 }
-

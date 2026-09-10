@@ -47,9 +47,8 @@ const ACTIVITIES: ActivityItem[] = [
   },
 ]
 
-
-export function RecentActivityCard() {
-  const { isExpanded, isFullHeight, toggle } = useCardCollapse(true)
+export function SalesRecentActivityCard() {
+  const { isExpanded, isFullHeight, toggle } = useCardCollapse(false)
 
   return (
     <div
@@ -81,7 +80,7 @@ export function RecentActivityCard() {
               toggle()
             }}
             aria-label={isExpanded ? 'Collapse Recent Activity' : 'Expand Recent Activity'}
-            className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+            className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
           >
             <ChevronDown
               className={`size-4 transition-transform duration-300 ease-in-out ${

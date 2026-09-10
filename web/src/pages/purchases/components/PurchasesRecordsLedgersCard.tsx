@@ -1,13 +1,11 @@
 import { ChevronDown, LayoutGrid, GripVertical } from 'lucide-react'
 import { useCardCollapse } from '../../../hooks/useCardCollapse'
-import cashierImg from '../../../assets/icons/cashier.png'
-import cashHandImg from '../../../assets/icons/cash-hand.png'
 import truckImg from '../../../assets/icons/truck.png'
-import cashAccountsImg from '../../../assets/icons/cash-accounts.png'
-import customerLedgerImg from '../../../assets/icons/Cusutomer-ledger.png'
+import cartonImg from '../../../assets/icons/carton.png'
 import penImg from '../../../assets/icons/pen.png'
-import walletImg from '../../../assets/icons/wallet.png'
+import receiveItemsImg from '../../../assets/icons/receive-items.png'
 import overdueImg from '../../../assets/icons/overdue-accounts.png'
+import walletImg from '../../../assets/icons/wallet.png'
 
 interface LedgerItem {
   id: string
@@ -16,19 +14,7 @@ interface LedgerItem {
   href: string
 }
 
-const LEDGERS: LedgerItem[] = [
-  {
-    id: 'sales-history',
-    label: 'Sales History',
-    icon: cashierImg,
-    href: '#sales-history',
-  },
-  {
-    id: 'collection-history',
-    label: 'Collection History',
-    icon: cashHandImg,
-    href: '#collection-history',
-  },
+const PURCHASE_LEDGERS: LedgerItem[] = [
   {
     id: 'purchase-history',
     label: 'Purchase History',
@@ -36,22 +22,10 @@ const LEDGERS: LedgerItem[] = [
     href: '#purchase-history',
   },
   {
-    id: 'cash-history',
-    label: 'Cash Account History',
-    icon: cashAccountsImg,
-    href: '#cash-account-history',
-  },
-  {
-    id: 'cash-drawer-history',
-    label: 'Cash Drawer History',
-    icon: overdueImg,
-    href: '#cash-drawer-history',
-  },
-  {
-    id: 'customer-ledgers',
-    label: 'Customer Ledgers',
-    icon: customerLedgerImg,
-    href: '#customer-ledgers',
+    id: 'purchase-orders',
+    label: 'Purchase Orders',
+    icon: cartonImg,
+    href: '#purchase-orders',
   },
   {
     id: 'supplier-ledgers',
@@ -60,15 +34,39 @@ const LEDGERS: LedgerItem[] = [
     href: '#supplier-ledgers',
   },
   {
-    id: 'expenses-history',
-    label: 'Expenses History',
+    id: 'receiving-reports',
+    label: 'Receiving Reports',
+    icon: receiveItemsImg,
+    href: '#receiving-reports',
+  },
+  {
+    id: 'overdue-payables',
+    label: 'Overdue Payables',
+    icon: overdueImg,
+    href: '#overdue-payables',
+  },
+  {
+    id: 'purchase-returns',
+    label: 'Purchase Returns',
+    icon: cartonImg,
+    href: '#purchase-returns',
+  },
+  {
+    id: 'voided-purchases',
+    label: 'Voided Purchases',
+    icon: penImg,
+    href: '#voided-purchases',
+  },
+  {
+    id: 'debit-memos',
+    label: 'Debit Memos',
     icon: walletImg,
-    href: '#expenses-history',
+    href: '#debit-memos',
   },
 ]
 
-export function RecordsLedgersCard() {
-  const { isExpanded, isFullHeight, toggle } = useCardCollapse(true)
+export function PurchasesRecordsLedgersCard() {
+  const { isExpanded, isFullHeight, toggle } = useCardCollapse(false)
 
   return (
     <div
@@ -100,7 +98,7 @@ export function RecordsLedgersCard() {
               toggle()
             }}
             aria-label={isExpanded ? 'Collapse Records & Ledgers' : 'Expand Records & Ledgers'}
-            className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+            className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
           >
             <ChevronDown
               className={`size-4 transition-transform duration-300 ease-in-out ${
@@ -110,7 +108,7 @@ export function RecordsLedgersCard() {
           </button>
         </div>
 
-        {/* Collapsible 4-column Grid of Ledger items */}
+        {/* Collapsible 4-column Grid */}
         <div
           className={`card-collapse-grid ${
             isExpanded ? 'is-expanded' : 'is-collapsed'
@@ -118,7 +116,7 @@ export function RecordsLedgersCard() {
         >
           <div className="card-collapse-inner">
             <div className="mt-3 grid grid-cols-4 gap-2.5 py-1">
-              {LEDGERS.map((item) => (
+              {PURCHASE_LEDGERS.map((item) => (
                 <a
                   key={item.id}
                   href={item.href}
@@ -144,4 +142,3 @@ export function RecordsLedgersCard() {
     </div>
   )
 }
-

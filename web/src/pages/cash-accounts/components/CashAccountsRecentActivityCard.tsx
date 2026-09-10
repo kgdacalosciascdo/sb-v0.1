@@ -1,4 +1,4 @@
-import { ChevronDown, ListFilter, GripVertical } from 'lucide-react'
+import { ChevronDown, GripVertical, Menu } from 'lucide-react'
 import { useCardCollapse } from '../../../hooks/useCardCollapse'
 
 interface ActivityItem {
@@ -13,49 +13,72 @@ const ACTIVITIES: ActivityItem[] = [
   {
     id: 'act-1',
     date: '29 July 2026',
-    activity: 'Sales return recorded',
-    amount: '₱1,000',
+    activity: 'Bank Deposit - Cash Remittance',
+    amount: '₱45,000',
     user: 'KVL',
   },
   {
     id: 'act-2',
     date: '29 July 2026',
-    activity: 'Sale voided',
-    amount: '₱300',
-    user: 'KVL',
-  },
-  {
-    id: 'act-3',
-    date: '29 July 2026',
-    activity: 'Cash sale recorded',
+    activity: 'Petty Cash Replenishment',
     amount: '₱5,000',
     user: 'CAL',
   },
   {
+    id: 'act-3',
+    date: '28 July 2026',
+    activity: 'Fund Transfer - BDO to GCash',
+    amount: '₱12,500',
+    user: 'KVL',
+  },
+  {
     id: 'act-4',
-    date: '29 July 2026',
-    activity: 'Cash sale recorded',
-    amount: '₱10,000',
+    date: '28 July 2026',
+    activity: 'Cash Remittance recorded',
+    amount: '₱18,750',
     user: 'CAL',
   },
   {
     id: 'act-5',
-    date: '29 July 2026',
-    activity: 'Credit sale recorded',
-    amount: '₱12,000',
+    date: '27 July 2026',
+    activity: 'Cash Count Variance adjustment',
+    amount: '₱250',
     user: 'CAL',
   },
 ]
 
+interface Props {
+  isDragging?: boolean
+  isDragOver?: boolean
+  onDragStart?: (e: React.DragEvent) => void
+  onDragOver?: (e: React.DragEvent) => void
+  onDragLeave?: () => void
+  onDrop?: (e: React.DragEvent) => void
+  onDragEnd?: () => void
+}
 
-export function RecentActivityCard() {
-  const { isExpanded, isFullHeight, toggle } = useCardCollapse(true)
+export function CashAccountsRecentActivityCard({
+  isDragging,
+  isDragOver,
+  onDragStart,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onDragEnd,
+}: Props) {
+  const { isExpanded, toggle } = useCardCollapse(false)
 
   return (
     <div
-      className={`w-full flex flex-col justify-between rounded-xl border border-[#72bee9] bg-white p-3.5 shadow-2xs transition-shadow duration-200 hover:shadow-xs ${
-        isFullHeight ? 'h-full' : 'h-auto self-start'
-      }`}
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+      className={`cash-accounts-card-draggable w-full flex flex-col justify-between rounded-xl border border-[#72bee9] bg-white p-3.5 shadow-2xs transition-shadow duration-200 hover:shadow-xs ${
+        isDragging ? 'is-dragging' : ''
+      } ${isDragOver ? 'is-drag-over' : ''}`}
     >
       {/* Header */}
       <div>
@@ -70,7 +93,7 @@ export function RecentActivityCard() {
             >
               <GripVertical className="size-3.5" />
             </span>
-            <ListFilter aria-hidden="true" className="size-5 text-slate-800 shrink-0" />
+            <Menu aria-hidden="true" className="size-5 text-slate-800 shrink-0" />
             <h2 className="text-[14px] font-bold text-slate-900 truncate">Recent Activity</h2>
           </div>
 
@@ -81,7 +104,7 @@ export function RecentActivityCard() {
               toggle()
             }}
             aria-label={isExpanded ? 'Collapse Recent Activity' : 'Expand Recent Activity'}
-            className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+            className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
           >
             <ChevronDown
               className={`size-4 transition-transform duration-300 ease-in-out ${
