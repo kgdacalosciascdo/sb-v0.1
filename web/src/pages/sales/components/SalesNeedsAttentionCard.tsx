@@ -28,27 +28,11 @@ const ATTENTION_ITEMS: AttentionItem[] = [
     href: '#cash-shortages',
   },
   {
-    id: 'stocks-reorder',
-    count: 7,
-    badgeColor: 'bg-[#e53935] text-white',
-    title: 'Stocks due for reorder',
-    subtitle: '5 items are below the reorder level',
-    href: '#stocks-reorder',
-  },
-  {
-    id: 'supplier-balances',
-    count: 3,
-    badgeColor: 'bg-[#e53935] text-white',
-    title: 'Overdue supplier balances',
-    subtitle: '₱12,456 needs to be paid',
-    href: '#overdue-suppliers',
-  },
-  {
     id: 'sales-return',
     count: 1,
     badgeColor: 'bg-[#f57c00] text-white',
     title: 'Sales return',
-    subtitle: '₱1,000 worth of item is returned',
+    subtitle: '₱1000 worth of item is returned',
     href: '#sales-return',
   },
   {
@@ -59,9 +43,17 @@ const ATTENTION_ITEMS: AttentionItem[] = [
     subtitle: '₱300 worth of sales transaction is voided',
     href: '#voided-sales',
   },
+  {
+    id: 'due-next-7-days',
+    count: 3,
+    badgeColor: 'bg-[#78909c] text-white',
+    title: 'Due in the next 7 days',
+    subtitle: '₱50,580 Due for collection in the next 7 days',
+    href: '#due-next-7-days',
+  },
 ]
 
-export function NeedsAttentionCard() {
+export function SalesNeedsAttentionCard() {
   const { isExpanded, isFullHeight, toggle } = useCardCollapse(true)
 
   return (
@@ -96,7 +88,7 @@ export function NeedsAttentionCard() {
                 toggle()
               }}
               aria-label={isExpanded ? 'Collapse Needs Attention' : 'Expand Needs Attention'}
-              className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+              className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
             >
               <ChevronDown
                 className={`size-4 transition-transform duration-300 ease-in-out ${
@@ -122,7 +114,7 @@ export function NeedsAttentionCard() {
                   href={item.href}
                   className="group flex items-start gap-2.5 py-0.5 transition hover:opacity-85"
                 >
-                  {/* Perfect Solid Circular Count Badge */}
+                  {/* Circular Count Badge */}
                   <span
                     className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold leading-none shadow-2xs ${item.badgeColor}`}
                   >
@@ -157,4 +149,3 @@ export function NeedsAttentionCard() {
     </div>
   )
 }
-

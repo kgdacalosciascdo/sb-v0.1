@@ -46,7 +46,6 @@ export const primaryNavigation: NavigationItem[] = [
     icon: ShoppingCart,
     imageIcon: cashierIcon,
     description: "Sales, billing, and customer balances",
-    isComingSoon: true,
   },
   {
     label: "Collections & Receipts",
@@ -54,7 +53,6 @@ export const primaryNavigation: NavigationItem[] = [
     icon: HandCoins,
     imageIcon: cashHandIcon,
     description: "Money received and customer collections",
-    isComingSoon: true,
   },
   {
     label: "Purchases & Payables",
@@ -62,7 +60,6 @@ export const primaryNavigation: NavigationItem[] = [
     icon: Truck,
     imageIcon: truckIcon,
     description: "Purchasing and supplier obligations",
-    isComingSoon: true,
   },
   {
     label: "Payments & Disbursements",
@@ -70,7 +67,6 @@ export const primaryNavigation: NavigationItem[] = [
     icon: ClipboardList,
     imageIcon: penIcon,
     description: "Outgoing payments and disbursements",
-    isComingSoon: true,
   },
   {
     label: "Inventory",
@@ -78,7 +74,6 @@ export const primaryNavigation: NavigationItem[] = [
     icon: Package,
     imageIcon: cartonIcon,
     description: "Stock availability and movement",
-    isComingSoon: true,
   },
   {
     label: "Cash Accounts",
@@ -86,7 +81,6 @@ export const primaryNavigation: NavigationItem[] = [
     icon: Landmark,
     imageIcon: cashAccountsIcon,
     description: "Cash locations, balances, and movement",
-    isComingSoon: true,
   },
   {
     label: "Expenses",

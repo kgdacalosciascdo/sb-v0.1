@@ -1,0 +1,100 @@
+/* Cash Accounts Entrance and Transition Styles */
+
+@keyframes cashAccountsFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-cash-accounts-header {
+  animation: cashAccountsFadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-cash-accounts-row-1 {
+  animation: cashAccountsFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.05s forwards;
+  opacity: 0;
+}
+
+.animate-cash-accounts-row-2 {
+  animation: cashAccountsFadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+  opacity: 0;
+}
+
+.animate-cash-accounts-row-3 {
+  animation: cashAccountsFadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+  opacity: 0;
+}
+
+/* Card Smooth Collapse & Uncollapse Animation */
+.card-collapse-grid {
+  display: grid;
+  transition: grid-template-rows 300ms cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: grid-template-rows, opacity;
+}
+
+.card-collapse-grid.is-collapsed {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.card-collapse-grid.is-expanded {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.card-collapse-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Draggable Cards & Drop Targets */
+.cash-accounts-card-draggable {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cash-accounts-card-draggable.is-dragging {
+  opacity: 0.35;
+  transform: scale(0.97);
+  border-style: dashed;
+  border-color: #65a30d;
+}
+
+.cash-accounts-card-draggable.is-drag-over {
+  position: relative;
+  transform: scale(1.015);
+  box-shadow: 0 10px 25px -5px rgba(101, 163, 13, 0.15), 0 8px 10px -6px rgba(101, 163, 13, 0.1);
+}
+
+.cash-accounts-card-draggable.is-drag-over::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 0.85rem;
+  border: 2px dashed #65a30d;
+  pointer-events: none;
+  animation: pulseDropRing 1.5s infinite;
+}
+
+@keyframes pulseDropRing {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 0.4; }
+}
+
+.drag-handle {
+  cursor: grab;
+  touch-action: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}

@@ -36,7 +36,7 @@ export function ProfitLossOverviewCard() {
 
   return (
     <div
-      className={`w-full flex flex-col justify-between rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-xs transition-shadow duration-200 hover:shadow-sm ${
+      className={`w-full flex flex-col justify-between rounded-xl border border-[#72bee9] bg-white p-3.5 shadow-2xs transition-shadow duration-200 hover:shadow-xs ${
         isFullHeight ? 'h-full' : 'h-auto self-start'
       }`}
     >

@@ -12,56 +12,48 @@ interface AttentionItem {
 
 const ATTENTION_ITEMS: AttentionItem[] = [
   {
-    id: 'customer-balances',
+    id: 'overdue-payables-today',
     count: 5,
     badgeColor: 'bg-[#e53935] text-white',
-    title: 'Overdue customer balances',
-    subtitle: '₱18,750 requires follow-up',
-    href: '#overdue-customers',
+    title: 'Overdue Payables / Due Today',
+    subtitle: '₱6,750 requires follow-up',
+    href: '#overdue-payables-today',
   },
   {
-    id: 'cash-shortages',
+    id: 'checks-due-funding',
     count: 1,
     badgeColor: 'bg-[#e53935] text-white',
-    title: 'Cash remittance shortages / overages',
-    subtitle: '₱500 cash shortage discovered',
-    href: '#cash-shortages',
+    title: 'Checks Due for Funding this week',
+    subtitle: '₱18,750 requires follow-up',
+    href: '#checks-due-funding',
   },
   {
-    id: 'stocks-reorder',
-    count: 7,
-    badgeColor: 'bg-[#e53935] text-white',
-    title: 'Stocks due for reorder',
-    subtitle: '5 items are below the reorder level',
-    href: '#stocks-reorder',
-  },
-  {
-    id: 'supplier-balances',
-    count: 3,
-    badgeColor: 'bg-[#e53935] text-white',
-    title: 'Overdue supplier balances',
-    subtitle: '₱12,456 needs to be paid',
-    href: '#overdue-suppliers',
-  },
-  {
-    id: 'sales-return',
+    id: 'failed-rejected-payments',
     count: 1,
     badgeColor: 'bg-[#f57c00] text-white',
-    title: 'Sales return',
-    subtitle: '₱1,000 worth of item is returned',
-    href: '#sales-return',
+    title: 'Failed / Rejected Payments',
+    subtitle: '₱1000 payments is not applied to supplier payables',
+    href: '#failed-rejected-payments',
   },
   {
-    id: 'voided-sales',
+    id: 'pending-approvals',
     count: 7,
     badgeColor: 'bg-[#78909c] text-white',
-    title: 'Voided sales',
-    subtitle: '₱300 worth of sales transaction is voided',
-    href: '#voided-sales',
+    title: 'Long-Pending Payments / Approval',
+    subtitle: '₱300 worth of purchase transaction is voided',
+    href: '#pending-approvals',
+  },
+  {
+    id: 'stale-outstanding-checks',
+    count: 3,
+    badgeColor: 'bg-[#78909c] text-white',
+    title: 'Stale / Outstanding Checks',
+    subtitle: '₱50,580 Due for payment in the next 7 days',
+    href: '#stale-outstanding-checks',
   },
 ]
 
-export function NeedsAttentionCard() {
+export function PaymentsNeedsAttentionCard() {
   const { isExpanded, isFullHeight, toggle } = useCardCollapse(true)
 
   return (
@@ -88,7 +80,7 @@ export function NeedsAttentionCard() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-normal text-slate-500">24 items</span>
+            <span className="text-xs font-normal text-slate-500">17 items</span>
             <button
               type="button"
               onClick={(e) => {
@@ -96,7 +88,7 @@ export function NeedsAttentionCard() {
                 toggle()
               }}
               aria-label={isExpanded ? 'Collapse Needs Attention' : 'Expand Needs Attention'}
-              className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+              className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
             >
               <ChevronDown
                 className={`size-4 transition-transform duration-300 ease-in-out ${
@@ -107,7 +99,7 @@ export function NeedsAttentionCard() {
           </div>
         </div>
 
-        {/* Collapsible Content Container with Smooth Animation */}
+        {/* Collapsible Content Container */}
         <div
           className={`card-collapse-grid ${
             isExpanded ? 'is-expanded' : 'is-collapsed'
@@ -122,7 +114,7 @@ export function NeedsAttentionCard() {
                   href={item.href}
                   className="group flex items-start gap-2.5 py-0.5 transition hover:opacity-85"
                 >
-                  {/* Perfect Solid Circular Count Badge */}
+                  {/* Circular Count Badge */}
                   <span
                     className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold leading-none shadow-2xs ${item.badgeColor}`}
                   >
@@ -145,7 +137,7 @@ export function NeedsAttentionCard() {
             {/* Footer link */}
             <div className="mt-2 text-right">
               <a
-                href="#all-attention-items"
+                href="#all-payment-attention"
                 className="text-[11px] font-medium text-[#0288d1] transition hover:underline"
               >
                 View all
@@ -157,4 +149,3 @@ export function NeedsAttentionCard() {
     </div>
   )
 }
-

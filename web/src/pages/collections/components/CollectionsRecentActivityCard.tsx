@@ -13,43 +13,42 @@ const ACTIVITIES: ActivityItem[] = [
   {
     id: 'act-1',
     date: '29 July 2026',
-    activity: 'Sales return recorded',
-    amount: '₱1,000',
+    activity: 'Payment received - OR#10024',
+    amount: '₱5,000',
     user: 'KVL',
   },
   {
     id: 'act-2',
     date: '29 July 2026',
-    activity: 'Sale voided',
-    amount: '₱300',
-    user: 'KVL',
+    activity: 'Payment received - OR#10023',
+    amount: '₱12,450',
+    user: 'CAL',
   },
   {
     id: 'act-3',
     date: '29 July 2026',
-    activity: 'Cash sale recorded',
-    amount: '₱5,000',
+    activity: 'Cash remittance recorded',
+    amount: '₱18,000',
     user: 'CAL',
   },
   {
     id: 'act-4',
     date: '29 July 2026',
-    activity: 'Cash sale recorded',
-    amount: '₱10,000',
-    user: 'CAL',
+    activity: 'Receipt voided',
+    amount: '₱300',
+    user: 'KVL',
   },
   {
     id: 'act-5',
     date: '29 July 2026',
-    activity: 'Credit sale recorded',
-    amount: '₱12,000',
+    activity: 'Customer refund issued',
+    amount: '₱1,000',
     user: 'CAL',
   },
 ]
 
-
-export function RecentActivityCard() {
-  const { isExpanded, isFullHeight, toggle } = useCardCollapse(true)
+export function CollectionsRecentActivityCard() {
+  const { isExpanded, isFullHeight, toggle } = useCardCollapse(false)
 
   return (
     <div
@@ -81,7 +80,7 @@ export function RecentActivityCard() {
               toggle()
             }}
             aria-label={isExpanded ? 'Collapse Recent Activity' : 'Expand Recent Activity'}
-            className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+            className="grid size-6 place-items-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
           >
             <ChevronDown
               className={`size-4 transition-transform duration-300 ease-in-out ${
