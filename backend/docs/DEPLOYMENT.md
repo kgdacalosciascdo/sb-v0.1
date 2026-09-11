@@ -12,18 +12,21 @@ The project URL and publishable key can be used by the browser once Supabase Row
 2. Replace the password placeholder with the database password, URL-encoding reserved password characters.
 3. Set it on Render as `DB_URL`, set `DB_CONNECTION=pgsql`, and keep `DB_SSLMODE=require`.
 4. Create a Supabase Auth user, then copy that user UUID.
-5. Deploy the API, open its Render Shell, and run:
+5. Before deploying, run the migrations and bootstrap command locally against the Supabase connection configured in `backend/.env`:
 
-   ```sh
+   ```powershell
+   cd backend
+   php artisan config:clear
    php artisan migrate --force
    php artisan simplebiz:seed-credit-sale --owner=<Supabase-Auth-user-UUID>
+   php artisan migrate:status
    ```
 
 6. Copy the printed Company UUID. Your future frontend API calls must send it in `X-Company-Id` alongside the signed-in user's access token.
 
 ## Render setup
 
-`render.yaml` at repository root defines a Docker web service rooted at `backend/`. Render uses Docker because PHP is not one of its native language runtimes.
+`render.yaml` at repository root defines one Free-tier Docker web service rooted at `backend/`. It does not use paid shell access, a paid pre-deploy command, background workers, persistent disks, or a Render database. Supabase remains the database provider.
 
 Set these Render secrets when the Blueprint prompts for them:
 
@@ -37,6 +40,8 @@ Set these Render secrets when the Blueprint prompts for them:
 | `SUPABASE_SECRET_KEY` | A newly rotated Supabase secret key; server-only. |
 
 `FRONTEND_URL` is already set to `https://sb-ph.vercel.app`, which permits browser API requests through the Laravel CORS configuration. Add other origins as a comma-separated list only when required.
+
+Because Render Free does not provide shell access, run new migrations from your local Laravel installation against Supabase before deploying each schema change.
 
 ## Health check
 

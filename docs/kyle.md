@@ -12,6 +12,7 @@ Prepare a backend-only Laravel API and PostgreSQL migration set for the Credit S
 - Added migrations for company access, document sequences, audit logs, the required sales reference data, sales, sale lines, and receivable open items.
 - Implemented tenant-scoped Supabase token verification, company membership checks, role checks, idempotent posting, credit-limit validation, server-side totals, due-date calculation, receivable creation, and audit evidence.
 - Added Render Docker/Blueprint configuration, Supabase environment templates, deployment instructions, API contract documentation, sample data bootstrap command, and feature tests.
+- Restricted the Render Blueprint to one explicit `plan: free` web service and moved migration instructions to the local-to-Supabase workflow so no paid Render shell or pre-deploy feature is required.
 
 ### Validation
 - `php artisan migrate --pretend --no-interaction` — passed.
