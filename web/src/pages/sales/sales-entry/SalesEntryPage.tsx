@@ -15,7 +15,8 @@ import { SalesTotalBreakdownCard } from './components/SalesTotalBreakdownCard'
 import { PreviewInvoiceModal } from './components/PreviewInvoiceModal'
 import { formatDisplayDate } from '../../../components/ui/DatePicker'
 import { SalesReceiptModal } from './components/SalesReceiptModal'
-import { submitSaleTransaction, type SalesApiResponse } from './api/salesApi'
+import { buildSalesPayload, type SalesApiResponse } from './api/salesApi'
+import { useSalesStore } from '../../../stores/useSalesStore'
 
 const INITIAL_CUSTOMERS: Customer[] = [
   {
@@ -104,6 +105,7 @@ export function SalesEntryPage() {
   const [apiResponse, setApiResponse] = useState<SalesApiResponse | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const addSale = useSalesStore((state) => state.addSale)
 
   const showToast = (type: 'success' | 'error', text: string) => {
     setToastMessage({ type, text })
@@ -204,10 +206,30 @@ export function SalesEntryPage() {
 
     setIsSubmitting(true)
     try {
-      const response = await submitSaleTransaction(formData, selectedCustomer, calculations)
+      const payload = buildSalesPayload(formData, selectedCustomer, calculations)
+      const savedSale = addSale({
+        saleNo: formData.salesNo,
+        mode: formData.mode,
+        formData: { ...formData, items: formData.items.map((item) => ({ ...item })) },
+        customer: selectedCustomer ? { ...selectedCustomer } : null,
+        calculations: { ...calculations },
+      })
+      const response: SalesApiResponse = {
+        status: 'success',
+        message: 'Sale saved to this browser.',
+        receipt_no: savedSale.receiptNo,
+        transaction_id: savedSale.transactionId,
+        data: {
+          ...payload,
+          id: savedSale.id,
+          receipt_no: savedSale.receiptNo,
+          status: savedSale.status,
+          created_at: savedSale.createdAt,
+        },
+      }
       setApiResponse(response)
       setShowReceiptModal(true)
-      showToast('success', `Transaction ${formData.salesNo} sent to API & recorded successfully!`)
+      showToast('success', `Transaction ${formData.salesNo} saved locally and recorded in Sales History.`)
     } catch (err) {
       console.error('Error completing sale:', err)
       showToast('error', 'Failed to record transaction.')
