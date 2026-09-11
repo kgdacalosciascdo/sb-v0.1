@@ -22,7 +22,7 @@ import penIcon from "../assets/icons/pen.png";
 import cartonIcon from "../assets/icons/carton.png";
 import cashAccountsIcon from "../assets/icons/cash-accounts.png";
 import walletIcon from "../assets/icons/wallet.png";
-import { ReportsIcon } from "../components/common/ReportsIcon";
+// import { ReportsIcon } from "../components/common/ReportsIcon";
 
 export const homeNavigation: NavigationItem = {
   label: "Home",

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react'
+import { CheckCircle, AlertCircle } from 'lucide-react'
 import type { Customer, SalesFormData, SalesLineItem, SalesMode } from './types'
 import { SalesEntryHeader, SalesEntryBreadcrumb } from './components/SalesEntryHeader'
 import { SalesInfoCard } from './components/SalesInfoCard'
