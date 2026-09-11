@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AuthenticateSupabaseUser;
 use App\Http\Middleware\AuthorizeCreditSale;
+use App\Http\Middleware\AllowDemoSales;
 use App\Http\Middleware\EnsureCompanyContext;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'supabase.auth' => AuthenticateSupabaseUser::class,
             'company.context' => EnsureCompanyContext::class,
+            'demo.sales' => AllowDemoSales::class,
             'sales.credit' => AuthorizeCreditSale::class,
         ]);
     })

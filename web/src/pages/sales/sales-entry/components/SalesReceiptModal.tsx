@@ -230,7 +230,7 @@ export function SalesReceiptModal({
             >
               <div className="flex items-center gap-1.5">
                 <Code2 className="size-3.5 text-[#0288d1]" />
-                <span>Saved Sale Data (local browser storage)</span>
+                <span>Saved Sale Data (Supabase)</span>
               </div>
               {showPayload ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
             </button>

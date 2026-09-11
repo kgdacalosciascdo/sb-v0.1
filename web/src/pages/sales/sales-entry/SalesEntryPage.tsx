@@ -16,6 +16,7 @@ import { PreviewInvoiceModal } from './components/PreviewInvoiceModal'
 import { formatDisplayDate } from '../../../components/ui/DatePicker'
 import { SalesReceiptModal } from './components/SalesReceiptModal'
 import { buildSalesPayload, type SalesApiResponse } from './api/salesApi'
+import { saveSaleToDatabase } from './api/demoSalesApi'
 import { useSalesStore } from '../../../stores/useSalesStore'
 
 const INITIAL_CUSTOMERS: Customer[] = [
@@ -207,16 +208,11 @@ export function SalesEntryPage() {
     setIsSubmitting(true)
     try {
       const payload = buildSalesPayload(formData, selectedCustomer, calculations)
-      const savedSale = addSale({
-        saleNo: formData.salesNo,
-        mode: formData.mode,
-        formData: { ...formData, items: formData.items.map((item) => ({ ...item })) },
-        customer: selectedCustomer ? { ...selectedCustomer } : null,
-        calculations: { ...calculations },
-      })
+      const savedSale = await saveSaleToDatabase(formData, selectedCustomer, calculations)
+      addSale(savedSale)
       const response: SalesApiResponse = {
         status: 'success',
-        message: 'Sale saved to this browser.',
+        message: 'Sale saved to Supabase.',
         receipt_no: savedSale.receiptNo,
         transaction_id: savedSale.transactionId,
         data: {
@@ -229,7 +225,7 @@ export function SalesEntryPage() {
       }
       setApiResponse(response)
       setShowReceiptModal(true)
-      showToast('success', `Transaction ${formData.salesNo} saved locally and recorded in Sales History.`)
+      showToast('success', `Transaction ${formData.salesNo} saved to Supabase and recorded in Sales History.`)
     } catch (err) {
       console.error('Error completing sale:', err)
       showToast('error', 'Failed to record transaction.')

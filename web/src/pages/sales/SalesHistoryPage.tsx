@@ -1,8 +1,9 @@
-import { Fragment, useState } from 'react'
-import { ArrowLeft, ChevronDown, ChevronUp, ReceiptText, Trash2 } from 'lucide-react'
+import { Fragment, useEffect, useState } from 'react'
+import { ArrowLeft, ChevronDown, ChevronUp, ReceiptText } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSalesStore, type LocalSaleRecord } from '../../stores/useSalesStore'
 import { buildSalesPayload, type SalesApiResponse } from './sales-entry/api/salesApi'
+import { fetchSalesFromDatabase } from './sales-entry/api/demoSalesApi'
 import { SalesReceiptModal } from './sales-entry/components/SalesReceiptModal'
 
 function money(value: number): string {
@@ -30,9 +31,35 @@ function createLocalResponse(sale: LocalSaleRecord): SalesApiResponse {
 export function SalesHistoryPage() {
   const navigate = useNavigate()
   const sales = useSalesStore((state) => state.sales)
-  const removeSale = useSalesStore((state) => state.removeSale)
+  const setSales = useSalesStore((state) => state.setSales)
   const [selectedSale, setSelectedSale] = useState<LocalSaleRecord | null>(null)
   const [expandedSaleId, setExpandedSaleId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    fetchSalesFromDatabase()
+      .then((records) => {
+        if (isMounted) {
+          setSales(records)
+          setLoadError(null)
+        }
+      })
+      .catch((error: unknown) => {
+        if (isMounted) {
+          setLoadError(error instanceof Error ? error.message : 'Unable to load sales history.')
+        }
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [setSales])
 
   return (
     <div className="w-full space-y-4 pb-6 animate-sales-header">
@@ -41,7 +68,7 @@ export function SalesHistoryPage() {
           <ReceiptText className="size-9 text-[#0288d1]" aria-hidden="true" />
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">Sales History</h1>
-            <p className="text-xs text-slate-600 sm:text-[13px]">Locally saved Cash and Credit Sale records on this browser.</p>
+            <p className="text-xs text-slate-600 sm:text-[13px]">Cash and Credit Sale records saved in Supabase.</p>
           </div>
         </div>
         <Link to="/sales" className="inline-flex items-center gap-1.5 self-start rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-sky-300 hover:bg-sky-50">
@@ -54,12 +81,16 @@ export function SalesHistoryPage() {
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
           <div>
             <h2 className="text-sm font-bold text-slate-900">Completed Transactions</h2>
-            <p className="mt-0.5 text-[11px] text-slate-500">{sales.length} locally saved record{sales.length === 1 ? '' : 's'}</p>
+            <p className="mt-0.5 text-[11px] text-slate-500">{sales.length} saved record{sales.length === 1 ? '' : 's'}</p>
           </div>
-          <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700">Browser storage only</span>
+          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">Supabase database</span>
         </div>
 
-        {sales.length === 0 ? (
+        {isLoading ? (
+          <div className="px-4 py-12 text-center text-xs text-slate-500">Loading sales from Supabase...</div>
+        ) : loadError ? (
+          <div className="px-4 py-12 text-center text-xs text-rose-600">{loadError}</div>
+        ) : sales.length === 0 ? (
           <div className="px-4 py-12 text-center text-xs text-slate-500">No completed sales have been saved yet.</div>
         ) : (
           <div className="overflow-x-auto">
@@ -87,7 +118,7 @@ export function SalesHistoryPage() {
                         <td className="px-4 py-3"><span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase ${sale.mode === 'cash' ? 'bg-sky-100 text-sky-700' : 'bg-violet-100 text-violet-700'}`}>{sale.mode}</span></td>
                         <td className="px-4 py-3 text-slate-700">{sale.customer?.name || 'Walk-in Retail Customer'}</td>
                         <td className="px-4 py-3 text-right font-mono font-semibold text-slate-900">{money(sale.calculations.totalAmount)}</td>
-                        <td className="px-4 py-3 text-right"><span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-bold text-emerald-700">Saved locally</span></td>
+                        <td className="px-4 py-3 text-right"><span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-bold text-emerald-700">Saved in DB</span></td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
                             <button type="button" onClick={() => setExpandedSaleId(isExpanded ? null : sale.id)} aria-expanded={isExpanded} className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900">
@@ -97,10 +128,6 @@ export function SalesHistoryPage() {
                             <button type="button" onClick={() => setSelectedSale(sale)} className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-semibold text-[#0288d1] transition hover:bg-sky-50">
                               <ReceiptText className="size-3.5" />
                               View Receipt
-                            </button>
-                            <button type="button" onClick={() => removeSale(sale.id)} className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-semibold text-slate-500 transition hover:bg-rose-50 hover:text-rose-600" title="Remove this local record">
-                              <Trash2 className="size-3.5" />
-                              Remove
                             </button>
                           </div>
                         </td>
