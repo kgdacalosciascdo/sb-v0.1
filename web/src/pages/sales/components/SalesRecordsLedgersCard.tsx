@@ -1,5 +1,6 @@
 import { ChevronDown, LayoutGrid, GripVertical } from 'lucide-react'
 import { useCardCollapse } from '../../../hooks/useCardCollapse'
+import { Link } from 'react-router-dom'
 import cashierImg from '../../../assets/icons/cashier.png'
 import cashHandImg from '../../../assets/icons/cash-hand.png'
 import customerLedgerImg from '../../../assets/icons/Cusutomer-ledger.png'
@@ -21,7 +22,7 @@ const SALES_LEDGERS: LedgerItem[] = [
     id: 'sales-history',
     label: 'Sales History',
     icon: cashierImg,
-    href: '#sales-history',
+    href: '/sales/history',
   },
   {
     id: 'collection-history',
@@ -119,9 +120,9 @@ export function SalesRecordsLedgersCard() {
           <div className="card-collapse-inner">
             <div className="mt-3 grid grid-cols-4 gap-2.5 py-1">
               {SALES_LEDGERS.map((item) => (
-                <a
+                <Link
                   key={item.id}
-                  href={item.href}
+                  to={item.href}
                   className="group flex flex-col items-center justify-center rounded-lg border border-transparent p-1.5 text-center transition hover:border-sky-200 hover:bg-sky-50/50"
                 >
                   <div className="flex h-16 sm:h-18 w-full items-center justify-center">
@@ -135,7 +136,7 @@ export function SalesRecordsLedgersCard() {
                   <span className="mt-1 line-clamp-2 text-[11px] sm:text-[11.5px] font-medium leading-tight text-slate-800 group-hover:text-[#0288d1]">
                     {item.label}
                   </span>
-                </a>
+                </Link>
               ))}
             </div>
           </div>
