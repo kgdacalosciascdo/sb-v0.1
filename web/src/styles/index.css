@@ -45,4 +45,29 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Theme-matched Custom Scrollbar */
+  .sales-custom-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #63c4ed #eef7fc;
+  }
+  .sales-custom-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .sales-custom-scroll::-webkit-scrollbar-track {
+    background: #eef7fc;
+    border-radius: 9999px;
+  }
+  .sales-custom-scroll::-webkit-scrollbar-thumb {
+    background: #63c4ed;
+    border-radius: 9999px;
+    border: 1px solid #eef7fc;
+  }
+  .sales-custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: #0288d1;
+  }
+  .sales-custom-scroll::-webkit-scrollbar-thumb:active {
+    background: #0277bd;
+  }
 }

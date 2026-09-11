@@ -8,6 +8,7 @@ import { DashboardPage } from '../../pages/dashboard/DashboardPage'
 import { MasterRegistriesPage } from '../../pages/master-registries/MasterRegistriesPage'
 import { SettingsPage } from '../../pages/settings/SettingsPage'
 import { SalesPage } from '../../pages/sales/SalesPage'
+import { SalesEntryPage } from '../../pages/sales/sales-entry/SalesEntryPage'
 import { CollectionsPage } from '../../pages/collections/CollectionsPage'
 import { PurchasesPage } from '../../pages/purchases/PurchasesPage'
 import { PaymentsPage } from '../../pages/payments/PaymentsPage'
@@ -37,6 +38,9 @@ export function AppRouter() {
             <Route path="/master-registries" element={<MasterRegistriesPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/sales" element={<SalesPage />} />
+            <Route path="/sales/entry" element={<SalesEntryPage />} />
+            <Route path="/sales/cash-sales" element={<SalesEntryPage />} />
+            <Route path="/sales/credit-sales" element={<SalesEntryPage />} />
             <Route path="/collections" element={<CollectionsPage />} />
             <Route path="/purchases" element={<PurchasesPage />} />
             <Route path="/payments" element={<PaymentsPage />} />
