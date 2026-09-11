@@ -89,13 +89,13 @@ export const primaryNavigation: NavigationItem[] = [
     imageIcon: walletIcon,
     description: "Operating costs and evidence",
   },
-  {
-    label: "Reports",
-    path: "/reports",
-    icon: ReportsIcon,
-    description: "Governed reports and analytics",
-    isComingSoon: true,
-  },
+  // {
+  //   label: "Reports",
+  //   path: "/reports",
+  //   icon: ReportsIcon,
+  //   description: "Governed reports and analytics",
+  //   isComingSoon: true,
+  // },
 ];
 
 export const secondaryNavigation: NavigationItem[] = [

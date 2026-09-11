@@ -35,7 +35,7 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
             'group relative flex min-h-[42px] items-center gap-3.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-inset',
             isCollapsed ? 'justify-center px-2 py-2' : 'px-4 py-2',
             isActive
-              ? 'bg-[#38bdf8]/35 text-white font-medium'
+              ? 'text-white font-semibold'
               : 'text-white/90 hover:bg-white/10 hover:text-white',
           )
         }
@@ -73,8 +73,8 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
             'group relative flex min-h-[50px] items-center gap-3.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-inset',
             isCollapsed ? 'justify-center px-2 py-2' : 'px-4 py-2',
             isActive
-              ? 'bg-[#aee2f8] text-slate-900 font-semibold'
-              : 'text-slate-700 font-medium hover:bg-sky-50 hover:text-slate-950',
+              ? 'text-slate-950 font-bold bg-white'
+              : 'text-slate-700 font-medium hover:bg-slate-50/80 hover:text-slate-950',
           )
         }
         end={item.path === '/dashboard'}
@@ -126,7 +126,7 @@ export function Sidebar({ isOpen, isCollapsed, onClose, onNavigate }: SidebarPro
             'group relative flex min-h-[40px] items-center gap-3.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-inset',
             isCollapsed ? 'justify-center px-2 py-1.5' : 'px-4 py-1.5',
             isActive
-              ? 'bg-[#38bdf8]/35 text-white font-medium'
+              ? 'text-white font-semibold'
               : 'text-white/90 hover:bg-white/10 hover:text-white',
           )
         }

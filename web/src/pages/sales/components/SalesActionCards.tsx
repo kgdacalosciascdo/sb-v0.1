@@ -29,7 +29,7 @@ const ACTION_CARDS: ActionCardConfig[] = [
     borderClass: 'border-[#0288d1]',
     textColor: 'text-white',
     subtextColor: 'text-white/95',
-    route: '#new-cash-sale',
+    route: '/sales/entry?mode=cash',
   },
   {
     id: 'credit-sales',
@@ -41,7 +41,7 @@ const ACTION_CARDS: ActionCardConfig[] = [
     borderClass: 'border-[#0288d1]',
     textColor: 'text-white',
     subtextColor: 'text-white/95',
-    route: '#new-credit-sale',
+    route: '/sales/entry?mode=credit',
   },
   {
     id: 'customer',
