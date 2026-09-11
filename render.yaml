@@ -40,3 +40,7 @@ services:
         sync: false
       - key: SUPABASE_SECRET_KEY
         sync: false
+      - key: DEMO_SALES_ENABLED
+        sync: false
+      - key: DEMO_COMPANY_ID
+        sync: false
