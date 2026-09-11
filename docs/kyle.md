@@ -1,3 +1,33 @@
+## 2026-09-11 — Credit Sale Backend Foundation
+
+### Objective
+Prepare a backend-only Laravel API and PostgreSQL migration set for the Credit Sale UI, ready for deployment to Render with Supabase Postgres and Supabase Auth.
+
+### Completed
+- Added a Credit Sale controller at `backend/app/Http/API/CreditSaleController.php` and declared all API routes directly in `backend/routes/api.php`.
+- Kept all newly added implementation code out of `backend/app/Modules/`.
+- Added standard Laravel models under `app/Models`, middleware under `app/Http/Middleware`, request validation under `app/Http/Requests`, transaction orchestration under `app/Services`, and fixed-point money helpers under `app/Support`.
+- Explicitly mapped `App\Models\Salesperson` to the migrated `salespersons` table; Laravel's default pluralizer otherwise queried the nonexistent `salespeople` table.
+- Corrected the local Supabase connection selector to `DB_CONNECTION=pgsql` and scrubbed a real database URL/password that had been copied into the tracked `.env.example` file.
+- Added migrations for company access, document sequences, audit logs, the required sales reference data, sales, sale lines, and receivable open items.
+- Implemented tenant-scoped Supabase token verification, company membership checks, role checks, idempotent posting, credit-limit validation, server-side totals, due-date calculation, receivable creation, and audit evidence.
+- Added Render Docker/Blueprint configuration, Supabase environment templates, deployment instructions, API contract documentation, sample data bootstrap command, and feature tests.
+
+### Validation
+- `php artisan migrate --pretend --no-interaction` — passed.
+- `php artisan test` — passed: 5 tests, 23 assertions.
+- `composer validate --no-check-publish` — passed.
+- `php artisan route:list --path=api --json` — passed; controller resolves to `App\\Http\\API\\CreditSaleController`.
+- `vendor/bin/pint --dirty` — formatted the backend changes.
+
+### Boundaries / Deferred
+- No frontend file was edited.
+- Credit Sale currently requires `amount_received` to be zero. Partial payment, payment receipt, Cash Account movement, inventory movement, attachment storage, and actual frontend API integration remain future work because they belong to their respective governed modules/services.
+
+### Security / Deployment Notes
+- The Supabase secret key shared in chat must be rotated before deployment and must be stored only in Render environment variables.
+- The original Laravel guidance package could not be installed because local PHP lacks ZIP/unzip support; its incomplete Composer change was removed, leaving Composer valid and clean.
+
 ## 2026-09-04 — Initial Application Foundation
 
 ### Objective
