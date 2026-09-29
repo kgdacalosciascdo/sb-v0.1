@@ -1,13 +1,14 @@
 .receive-payment {
-  color: #175187;
-  font-size: 12px;
+  color: #0c3761;
+  font-size: 13px;
+  line-height: 1.5;
   animation: rp-enter 0.3s ease-out both;
 }
 .rp-breadcrumb {
   display: flex;
   gap: 4px;
-  color: #7192a3;
-  font-size: 10px;
+  color: #526b80;
+  font-size: 12px;
   margin-bottom: 6px;
 }
 .receive-payment .rp-breadcrumb button {
@@ -30,14 +31,14 @@
   transform: scale(2);
 }
 .rp-heading h1 {
-  color: #425c69;
+  color: #0c3761;
   font-weight: 700;
   font-size: 26px;
   line-height: 1.2;
 }
 .rp-heading p {
-  color: #688798;
-  font-size: 11px;
+  color: #475569;
+  font-size: 13px;
   margin-top: 5px;
 }
 .receive-payment button,
@@ -45,9 +46,10 @@
   border: 1px solid #aabcca;
   border-radius: 4px;
   background: linear-gradient(#fff, #f5f7f8);
-  color: #38566e;
+  color: #334155;
   padding: 6px 12px;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1.25;
   cursor: pointer;
   transition: background 0.15s;
@@ -78,8 +80,9 @@
   border-radius: 3px;
   background: white;
   padding: 4px 8px;
-  font-size: 11px;
-  color: #587087;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
   outline-offset: 2px;
 }
 .receive-payment :is(input, select, textarea):focus-visible,
@@ -134,7 +137,7 @@
   align-items: center;
   gap: 7px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.25;
 }
 .rp-panel h2 svg {
@@ -163,15 +166,16 @@
   gap: 8px;
 }
 .rp-customer-inputs label {
-  color: #6b90a7;
-  font-size: 10px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 .rp-customer-inputs :is(input, select) {
   width: 100%;
-  height: 29px;
+  height: 32px;
 }
 .rp-customer-inputs label:first-child select {
   border-color: #009de9;
@@ -185,13 +189,13 @@
   padding: 0 3px 4px;
 }
 .rp-customer-info strong {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   display: block;
 }
 .rp-customer-info p {
-  font-size: 9px;
-  color: #7090a3;
+  font-size: 12px;
+  color: #475569;
   margin-top: 3px;
 }
 .rp-customer-info > div:last-child {
@@ -199,8 +203,9 @@
   flex-shrink: 0;
 }
 .rp-customer-info span {
-  font-size: 10px;
-  color: #7294aa;
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
 }
 .purple {
   color: #643b9b;
@@ -220,15 +225,16 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #7494a7;
-  font-size: 10px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
 }
 .rp-amount input {
   width: 132px;
   height: 34px;
   color: #144579;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 700;
 }
 .rp-table-scroll {
   position: relative;
@@ -237,15 +243,17 @@
 .rp-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: 500;
   text-align: left;
-  color: #7188a1;
+  color: #334155;
 }
 .rp-table thead {
   background: #edf2f5;
 }
 .rp-table th {
-  font-weight: 400;
+  font-weight: 600;
+  color: #475569;
   padding: 7px 5px;
   white-space: nowrap;
 }
@@ -256,8 +264,8 @@
 }
 .rp-table :is(input:not([type='checkbox']), select) {
   width: 100%;
-  height: 24px;
-  font-size: 10px;
+  height: 28px;
+  font-size: 12px;
   padding: 2px 5px;
 }
 .rp-tenders {
@@ -285,7 +293,7 @@
   min-width: 675px;
 }
 .rp-invoices td {
-  height: 30px;
+  height: 34px;
 }
 .rp-invoices th:first-child {
   width: 30px;
@@ -295,6 +303,10 @@
 }
 .rp-invoices :is(th, td):nth-last-child(-n + 3) {
   text-align: right;
+}
+.rp-invoices td:nth-last-child(-n + 3) {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 .rp-invoices td:first-child {
   text-align: left;
@@ -328,12 +340,13 @@
 }
 .rp-remarks strong {
   display: block;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 700;
 }
 .rp-remarks small {
   display: block;
-  font-size: 9px;
-  color: #7492a4;
+  font-size: 12px;
+  color: #475569;
   margin-top: 2px;
 }
 .rp-remarks textarea {
@@ -379,7 +392,7 @@
 }
 .rp-summary h2 {
   margin-bottom: 18px;
-  white-space: nowrap;
+  white-space: normal;
 }
 .rp-summary dl > div {
   display: flex;
@@ -388,13 +401,15 @@
   margin-bottom: 5px;
 }
 .rp-summary dt {
-  color: #7d96ae;
-  font-size: 11px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 500;
 }
 .rp-summary dd {
   text-align: right;
-  font-weight: 600;
-  font-size: 11px;
+  font-weight: 700;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
 .rp-summary hr {
@@ -410,10 +425,11 @@
   flex-direction: column;
   gap: 5px;
   margin-top: 10px;
-  font-size: 11px;
+  font-size: 13px;
 }
 .rp-application-summary span {
-  color: #7d96ae;
+  color: #475569;
+  font-weight: 500;
 }
 .rp-application-summary strong {
   margin-bottom: 5px;
@@ -424,9 +440,9 @@
   background: #d1effb;
   border: 1px solid #bce4f6;
   border-radius: 5px;
-  font-size: 10px;
-  color: #7393aa;
-  line-height: 1.4;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.5;
 }
 .rp-application-summary + .rp-summary-note {
   margin-top: auto;
@@ -446,7 +462,7 @@
 .rp-footer button {
   min-width: 90px;
   padding: 9px 13px;
-  font-size: 12px;
+  font-size: 13px;
 }
 .rp-history-link {
   text-align: right;
@@ -456,8 +472,8 @@
   padding: 0;
   border: 0;
   background: none;
-  font-size: 10px;
-  color: #3185b5;
+  font-size: 12px;
+  color: #0369a1;
 }
 .rp-message {
   padding: 10px 14px;
@@ -533,7 +549,7 @@
 }
 .collection-receipt {
   padding: 24px;
-  font-size: 12px;
+  font-size: 13px;
 }
 .collection-receipt header {
   text-align: center;
@@ -560,12 +576,13 @@
   gap: 3px;
 }
 .collection-receipt-meta small {
-  color: #70879b;
+  color: #475569;
+  font-size: 12px;
 }
 .collection-dialog table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 11px;
+  font-size: 12px;
 }
 .collection-dialog th {
   background: #edf6fa;
@@ -580,7 +597,8 @@
 }
 .collection-receipt td small {
   display: block;
-  color: #7891a5;
+  color: #475569;
+  font-size: 12px;
 }
 .collection-receipt h4 {
   font-weight: 600;
@@ -597,7 +615,7 @@
   padding: 5px;
 }
 .collection-receipt dd {
-  font-weight: 600;
+  font-weight: 700;
 }
 .collection-receipt-remarks {
   white-space: pre-wrap;
@@ -611,15 +629,15 @@
 }
 .collection-receipt footer {
   margin-top: 24px;
-  font-size: 10px;
-  color: #7a8c9a;
+  font-size: 12px;
+  color: #475569;
   text-align: center;
 }
 .rp-customer-form,
 .rp-ledger,
 .rp-draft-list {
   padding: 20px;
-  font-size: 12px;
+  font-size: 13px;
 }
 .rp-customer-form label {
   display: flex;
@@ -627,7 +645,7 @@
   gap: 8px;
 }
 .rp-customer-form p {
-  color: #74879a;
+  color: #475569;
   margin: 12px 0;
 }
 .rp-customer-form button {
@@ -670,7 +688,7 @@
     flex-wrap: wrap;
   }
   .rp-panel h2 {
-    font-size: 14px;
+    font-size: 15px;
   }
   .rp-customer-inputs {
     grid-template-columns: 1fr 1fr;
@@ -704,7 +722,7 @@
     font-size: 23px;
   }
   .rp-heading p {
-    font-size: 10px;
+    font-size: 12px;
   }
   .rp-customer-info {
     flex-direction: column;

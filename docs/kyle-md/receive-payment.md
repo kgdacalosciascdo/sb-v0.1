@@ -2,6 +2,10 @@
 
 ## Scope and coordination
 
+### Readability follow-up
+
+Increased labels, inputs, table rows, summaries, and receipt text to predominantly 12–13px, with bold section headings/totals and darker slate/navy colors aligned with Sales. Preserved the panel arrangement and sidebar; slightly increased control/row heights to accommodate the text. Frontend build and isolated desktop/mobile browser regression passed. No backend or database changes.
+
 Implemented the Receive Payment page from the supplied reference, its Laravel API, and Supabase PostgreSQL storage. Preserved the existing sidebar, navbar, shell, Home, Dashboard, and Collections landing layout. Only the Receive Payment / Receipt History destinations changed in Jhonel's action-card component.
 
 Read `docs/jhonel.md` (currently empty) and `docs/jhonel-md/collections.md`; neither was modified. Existing changes in `docs/kyle.md` were preserved. No new backend Modules folders were added.
