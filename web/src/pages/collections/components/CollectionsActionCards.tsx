@@ -28,7 +28,7 @@ const ACTION_CARDS: ActionCardConfig[] = [
     borderClass: 'border-[#68c486]',
     textColor: 'text-slate-900',
     subtextColor: 'text-slate-700',
-    route: '#receive-payment',
+    route: '/collections/receive-payment',
   },
   {
     id: 'receipt-history',
@@ -40,7 +40,7 @@ const ACTION_CARDS: ActionCardConfig[] = [
     borderClass: 'border-[#68c486]',
     textColor: 'text-slate-900',
     subtextColor: 'text-slate-700',
-    route: '#receipt-history',
+    route: '/collections/receipts',
   },
   {
     id: 'cash-remittance',
