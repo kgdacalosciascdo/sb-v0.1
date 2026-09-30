@@ -13,20 +13,20 @@ SimpleBIZ One is a modern, entrepreneur-first business platform. Its design dire
 
 MDS-000 SimpleBIZ One Core governs common behavior. Module-specific MDS documents extend it and govern their own business meaning; they must not bypass or redefine common Core rules.
 
-| Backend module | Governing MDS | Responsibility |
-| --- | --- | --- |
-| `Core` | MDS-000 | Shared platform services and controls |
-| `Dashboard` | MDS-100 | Business overview and authorized navigation |
-| `Sales` | MDS-200 | Sales & Receivables |
-| `Collections` | MDS-300 | Collections & Receipts |
-| `Purchases` | MDS-400 | Purchases & Payables |
-| `Payments` | MDS-500 | Payments & Disbursements |
-| `Inventory` | MDS-600 | Inventory |
-| `CashAccounts` | MDS-700 | Cash Accounts |
-| `Expenses` | MDS-800 | Expenses |
-| `Reports` | MDS-900 | Reports & Analytics |
-| `MasterRegistries` | MDS-1000 | Authoritative shared operational records |
-| `Settings` | MDS-1100 | Settings & Administration |
+| Backend module     | Governing MDS | Responsibility                              |
+| ------------------ | ------------- | ------------------------------------------- |
+| `Core`             | MDS-000       | Shared platform services and controls       |
+| `Dashboard`        | MDS-100       | Business overview and authorized navigation |
+| `Sales`            | MDS-200       | Sales & Receivables                         |
+| `Collections`      | MDS-300       | Collections & Receipts                      |
+| `Purchases`        | MDS-400       | Purchases & Payables                        |
+| `Payments`         | MDS-500       | Payments & Disbursements                    |
+| `Inventory`        | MDS-600       | Inventory                                   |
+| `CashAccounts`     | MDS-700       | Cash Accounts                               |
+| `Expenses`         | MDS-800       | Expenses                                    |
+| `Reports`          | MDS-900       | Reports & Analytics                         |
+| `MasterRegistries` | MDS-1000      | Authoritative shared operational records    |
+| `Settings`         | MDS-1100      | Settings & Administration                   |
 
 The repository currently stores the authoritative MDS files in `modules/` and the supplied visual references in `ui/pages/` and `ui/forms/`. The original documents remain authoritative; this file is only a developer orientation aid.
 

@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Banknote,
-  CreditCard,
-  List,
-  MessageCircle,
+  ChevronDown,
   Paperclip,
   Plus,
-  ReceiptText,
-  UserRound,
   X,
 } from 'lucide-react'
 import cashHandImg from '../../../assets/icons/cash-hand.png'
+import cardIcon from '../../../assets/svg/card.svg'
+import calculatorIcon from '../../../assets/svg/calculator.svg'
+import customerLedgerIcon from '../../../assets/svg/Customer-ledger-svg.svg'
+import humanIcon from '../../../assets/svg/human.svg'
+import messageIcon from '../../../assets/svg/message.svg'
 import {
   cents,
   CollectionApiError,
@@ -46,14 +46,235 @@ const emptyForm = (): PaymentPayload => ({
   remarks: '',
   attachments: [],
 })
+const emptyPaymentBootstrap: PaymentBootstrap = {
+  company: { name: '', currency: 'PHP' },
+  customers: [],
+  open_items: [],
+  accounts: [],
+  payment_methods: [],
+}
+const bootstrapCacheKey = 'simplebiz.collections.bootstrap.v1'
+
+function readCachedBootstrap(): PaymentBootstrap | null {
+  try {
+    const stored = window.sessionStorage.getItem(bootstrapCacheKey)
+    if (!stored) return null
+
+    const value = JSON.parse(stored) as Partial<PaymentBootstrap>
+    if (
+      value.company &&
+      Array.isArray(value.customers) &&
+      Array.isArray(value.open_items) &&
+      Array.isArray(value.accounts) &&
+      Array.isArray(value.payment_methods)
+    ) {
+      return value as PaymentBootstrap
+    }
+  } catch {
+    // Browser storage can be unavailable in restricted preview environments.
+  }
+
+  return null
+}
+
+function cacheBootstrap(value: PaymentBootstrap) {
+  try {
+    window.sessionStorage.setItem(bootstrapCacheKey, JSON.stringify(value))
+  } catch {
+    // The page can still use the response when browser storage is unavailable.
+  }
+}
+
+function clearCachedBootstrap() {
+  try {
+    window.sessionStorage.removeItem(bootstrapCacheKey)
+  } catch {
+    // The live page state can still be invalidated if storage is unavailable.
+  }
+}
+
+function withBootstrapDefaults(
+  form: PaymentPayload,
+  value: PaymentBootstrap | null,
+): PaymentPayload {
+  if (!value) return form
+
+  const customerKey = value.customers.some(
+    (customer) => customer.key === form.customer_key,
+  )
+    ? form.customer_key
+    : value.open_items[0]?.customer_key || value.customers[0]?.key || ''
+  const tenders = form.tenders.map((tender) => {
+    const account =
+      value.accounts.find(
+        (candidate) =>
+          candidate.id === tender.account_id &&
+          candidate.payment_methods.includes(tender.method),
+      ) ||
+      value.accounts.find((candidate) =>
+        candidate.payment_methods.includes(tender.method),
+      )
+    return { ...tender, account_id: account?.id || '' }
+  })
+
+  return {
+    ...form,
+    customer_key: customerKey,
+    tenders,
+    applications: form.applications.filter((application) =>
+      value.open_items.some(
+        (item) =>
+          item.id === application.sale_id && item.customer_key === customerKey,
+      ),
+    ),
+  }
+}
+
+function SkeletonBar({ className = '' }: { className?: string }) {
+  return <span aria-hidden="true" className={`rp-skeleton-bar ${className}`} />
+}
+
+function ReceivePaymentSkeleton() {
+  return (
+    <div
+      className="rp-skeleton"
+      role="status"
+      aria-label="Loading receive payment data"
+    >
+      <div className="rp-skeleton-workspace">
+        <SkeletonBar className="rp-skeleton-breadcrumb" />
+        <div className="rp-skeleton-heading">
+          <SkeletonBar className="rp-skeleton-page-icon" />
+          <div>
+            <SkeletonBar className="rp-skeleton-page-title" />
+            <SkeletonBar className="rp-skeleton-page-description" />
+          </div>
+        </div>
+        <div className="rp-skeleton-main">
+          <section className="rp-panel rp-skeleton-card rp-skeleton-customer">
+            <div className="rp-skeleton-card-heading">
+              <SkeletonBar className="rp-skeleton-section-title" />
+              <SkeletonBar className="rp-skeleton-button" />
+              <SkeletonBar className="rp-skeleton-button rp-skeleton-button-wide" />
+            </div>
+            <div className="rp-skeleton-customer-fields">
+              {[0, 1, 2].map((field) => (
+                <div className="rp-skeleton-field" key={field}>
+                  <SkeletonBar className="rp-skeleton-label" />
+                  <SkeletonBar className="rp-skeleton-input" />
+                </div>
+              ))}
+            </div>
+            <div className="rp-skeleton-customer-details">
+              <SkeletonBar className="rp-skeleton-detail-name" />
+              <SkeletonBar className="rp-skeleton-detail-line" />
+              <SkeletonBar className="rp-skeleton-balance-label" />
+              <SkeletonBar className="rp-skeleton-balance-value" />
+            </div>
+          </section>
+          <section className="rp-panel rp-skeleton-card rp-skeleton-amount">
+            <SkeletonBar className="rp-skeleton-section-title" />
+            <SkeletonBar className="rp-skeleton-amount-input" />
+          </section>
+          <section className="rp-panel rp-skeleton-card rp-skeleton-methods">
+            <div className="rp-skeleton-card-heading">
+              <SkeletonBar className="rp-skeleton-section-title" />
+              <SkeletonBar className="rp-skeleton-button rp-skeleton-button-wide" />
+            </div>
+            <div className="rp-skeleton-method-columns">
+              {[0, 1, 2, 3].map((column) => (
+                <SkeletonBar className="rp-skeleton-label" key={column} />
+              ))}
+            </div>
+            <div className="rp-skeleton-table-rows">
+              {[0, 1, 2, 3, 4].map((row) => (
+                <div className="rp-skeleton-method-row" key={row}>
+                  {[0, 1, 2, 3].map((column) => (
+                    <SkeletonBar className="rp-skeleton-input" key={column} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </section>
+          <section className="rp-panel rp-skeleton-card rp-skeleton-balances">
+            <div className="rp-skeleton-card-heading">
+              <SkeletonBar className="rp-skeleton-section-title rp-skeleton-section-title-wide" />
+              <SkeletonBar className="rp-skeleton-button" />
+              <SkeletonBar className="rp-skeleton-button rp-skeleton-button-wide" />
+            </div>
+            <div className="rp-skeleton-table-heading">
+              {[0, 1, 2, 3, 4, 5].map((column) => (
+                <SkeletonBar className="rp-skeleton-label" key={column} />
+              ))}
+            </div>
+            <div className="rp-skeleton-table-rows">
+              {[0, 1, 2, 3].map((row) => (
+                <div className="rp-skeleton-balance-row" key={row}>
+                  {[0, 1, 2, 3, 4, 5].map((column) => (
+                    <SkeletonBar className="rp-skeleton-cell" key={column} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+        <aside className="rp-panel rp-skeleton-card rp-skeleton-summary">
+          <SkeletonBar className="rp-skeleton-section-title" />
+          <div className="rp-skeleton-summary-block">
+            {[0, 1, 2].map((row) => (
+              <div className="rp-skeleton-summary-row" key={row}>
+                <SkeletonBar className="rp-skeleton-label" />
+                <SkeletonBar className="rp-skeleton-summary-value" />
+              </div>
+            ))}
+          </div>
+          <SkeletonBar className="rp-skeleton-divider" />
+          <div className="rp-skeleton-summary-block">
+            {[0, 1, 2].map((row) => (
+              <div className="rp-skeleton-summary-row" key={row}>
+                <SkeletonBar className="rp-skeleton-label" />
+                <SkeletonBar className="rp-skeleton-summary-value" />
+              </div>
+            ))}
+          </div>
+          <SkeletonBar className="rp-skeleton-divider" />
+          <SkeletonBar className="rp-skeleton-summary-wide" />
+          <SkeletonBar className="rp-skeleton-summary-wide rp-skeleton-summary-emphasis" />
+          <SkeletonBar className="rp-skeleton-summary-wide rp-skeleton-summary-short" />
+          <SkeletonBar className="rp-skeleton-summary-emphasis rp-skeleton-summary-total" />
+          <SkeletonBar className="rp-skeleton-summary-note" />
+        </aside>
+      </div>
+      <div className="rp-skeleton-bottom-row">
+        <div className="rp-panel rp-skeleton-card rp-skeleton-remarks">
+          <SkeletonBar className="rp-skeleton-message-icon" />
+          <SkeletonBar className="rp-skeleton-section-title" />
+          <SkeletonBar className="rp-skeleton-chevron" />
+        </div>
+        <div className="rp-skeleton-actions">
+          {[0, 1, 2, 3, 4].map((button) => (
+            <SkeletonBar className="rp-skeleton-action-button" key={button} />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export function ReceivePaymentPage() {
   const navigate = useNavigate()
-  const [data, setData] = useState<PaymentBootstrap | null>(null)
-  const [form, setForm] = useState<PaymentPayload>(emptyForm)
+  const [initialData] = useState<PaymentBootstrap | null>(readCachedBootstrap)
+  const [data, setData] = useState<PaymentBootstrap>(
+    initialData || emptyPaymentBootstrap,
+  )
+  const [hasLiveBootstrap, setHasLiveBootstrap] = useState(Boolean(initialData))
+  const [bootstrapLoading, setBootstrapLoading] = useState(!initialData)
+  const [form, setForm] = useState<PaymentPayload>(() =>
+    withBootstrapDefaults(emptyForm(), initialData),
+  )
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [validationAttempted, setValidationAttempted] = useState(false)
   const [busy, setBusy] = useState(false)
   const busyRef = useRef(false)
   const requestRef = useRef<{ key: string; payload: string } | null>(null)
@@ -70,33 +291,40 @@ export function ReceivePaymentPage() {
 
   useEffect(() => {
     let active = true
-    collectionRequest<{ data: PaymentBootstrap }>('bootstrap')
+    const controller = new AbortController()
+    const timeoutId = window.setTimeout(() => controller.abort(), 10_000)
+
+    collectionRequest<{ data: PaymentBootstrap }>('bootstrap', {
+      signal: controller.signal,
+    })
       .then(({ data: value }) => {
         if (!active) return
         setData(value)
-        setForm((f) => ({
-          ...f,
-          customer_key:
-            value.open_items[0]?.customer_key || value.customers[0]?.key || '',
-          tenders: [
-            {
-              ...emptyTender(),
-              account_id:
-                value.accounts.find((a) =>
-                  a.payment_methods.includes('Bank Transfer'),
-                )?.id || '',
-            },
-          ],
-        }))
+        setHasLiveBootstrap(true)
+        cacheBootstrap(value)
+        setError('')
+        setForm((f) => withBootstrapDefaults(f, value))
       })
-      .catch((e) => {
-        if (active) setError(e.message)
+      .catch((e: unknown) => {
+        if (!active) return
+        if (e instanceof Error && e.name === 'AbortError') {
+          setError(
+            'Loading payment data timed out. Check that the backend and database are responding, then retry.',
+          )
+        } else if (e instanceof Error) {
+          setError(e.message)
+        } else {
+          setError('Unable to load payment data.')
+        }
       })
       .finally(() => {
-        if (active) setLoading(false)
+        window.clearTimeout(timeoutId)
+        if (active) setBootstrapLoading(false)
       })
     return () => {
       active = false
+      window.clearTimeout(timeoutId)
+      controller.abort()
     }
   }, [])
 
@@ -112,6 +340,12 @@ export function ReceivePaymentPage() {
   const received = cents(form.amount)
   const applied = form.applications.reduce((sum, a) => sum + cents(a.amount), 0)
   const tenderTotal = form.tenders.reduce((sum, t) => sum + cents(t.amount), 0)
+  const tenderHasAccount = (tender: Tender) =>
+    data.accounts.some(
+      (account) =>
+        account.id === tender.account_id &&
+        account.payment_methods.includes(tender.method),
+    )
   const allocation = (id: string) =>
     form.applications.find((a) => a.sale_id === id)
 
@@ -156,19 +390,20 @@ export function ReceivePaymentPage() {
   }
   function validate(): string {
     if (!customer) return 'Select a customer.'
-    if (!form.receipt_date || received <= 0)
-      return 'Enter a receipt date and an amount greater than zero.'
-    if (
-      form.tenders.some(
-        (t) =>
-          !t.account_id ||
-          cents(t.amount) <= 0 ||
-          (t.method !== 'Cash' && !t.reference.trim()),
-      )
-    )
-      return 'Complete every payment method, cash account, amount, and non-cash reference number.'
+    if (!form.receipt_date) return 'Enter a receipt date.'
+    if (received <= 0) return 'Enter an amount greater than zero.'
+    for (const [index, tender] of form.tenders.entries()) {
+      const row = index + 1
+      if (!tender.method) return `Choose a payment method for row ${row}.`
+      if (!tenderHasAccount(tender))
+        return `Select a cash account for payment method ${row}.`
+      if (cents(tender.amount) <= 0)
+        return `Enter a positive amount for payment method ${row}.`
+      if (tender.method !== 'Cash' && !tender.reference.trim())
+        return `Enter a reference number for payment method ${row}.`
+    }
     if (tenderTotal !== received)
-      return 'Payment method amounts must equal the amount received.'
+      return `Payment method amounts total ${peso(tenderTotal)}; they must equal ${peso(received)} received.`
     if (applied > received)
       return 'Applied amounts cannot exceed the amount received.'
     if (
@@ -182,6 +417,7 @@ export function ReceivePaymentPage() {
       return 'Each selected invoice needs a positive amount no greater than its balance.'
     return ''
   }
+  const validationMessage = validationAttempted ? validate() : ''
   async function run(action: () => Promise<void>) {
     if (busyRef.current) return
     busyRef.current = true
@@ -200,11 +436,10 @@ export function ReceivePaymentPage() {
     }
   }
   function previewReceipt() {
+    setValidationAttempted(true)
+    setError('')
     const message = validate()
-    if (message) {
-      setError(message)
-      return
-    }
+    if (message) return
     if (!data || !customer) return
     setError('')
     setReceipt({
@@ -238,11 +473,10 @@ export function ReceivePaymentPage() {
     })
   }
   async function post() {
+    setValidationAttempted(true)
+    setError('')
     const message = validate()
-    if (message) {
-      setError(message)
-      return
-    }
+    if (message) return
     await run(async () => {
       const payload = JSON.stringify(form)
       // Retain the same key and body after a timeout; retrying must not issue a second receipt.
@@ -271,6 +505,7 @@ export function ReceivePaymentPage() {
       }
       requestRef.current = null
       setReceipt({ value: saved, preview: false })
+      setValidationAttempted(false)
       setForm({
         ...emptyForm(),
         customer_key: form.customer_key,
@@ -290,8 +525,11 @@ export function ReceivePaymentPage() {
           'bootstrap',
         )
         setData(fresh.data)
+        setHasLiveBootstrap(true)
+        cacheBootstrap(fresh.data)
       } catch {
-        setData(null)
+        clearCachedBootstrap()
+        setHasLiveBootstrap(false)
         setError(
           'Receipt posted successfully, but balances could not refresh. Reload before entering another payment.',
         )
@@ -361,26 +599,17 @@ export function ReceivePaymentPage() {
 
   return (
     <div className="receive-payment">
-      <nav className="rp-breadcrumb" aria-label="Breadcrumb">
-        <button onClick={() => navigate('/collections')}>
-          Collections &amp; Receipts
-        </button>
-        <span>›</span>
-        <span>Receive Payment</span>
-      </nav>
-      <header className="rp-heading">
-        <img src={cashHandImg} alt="" />
-        <div>
-          <h1>Receive Payment</h1>
-          <p>
-            Record money received from a customer and apply it to outstanding
-            balances.
-          </p>
-        </div>
-      </header>
-      {error && (
+
+
+      {error && !validationMessage && (
         <div className="rp-message error" role="alert">
           {error}
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      )}
+      {validationMessage && (
+        <div className="rp-message error" role="alert">
+          {validationMessage}
         </div>
       )}
       {notice && (
@@ -388,16 +617,7 @@ export function ReceivePaymentPage() {
           {notice}
         </div>
       )}
-      {loading ? (
-        <div className="rp-panel rp-loading" role="status">
-          Loading customers and open balances…
-        </div>
-      ) : !data ? (
-        <div className="rp-panel rp-loading">
-          <p>Unable to load payment data.</p>
-          <button onClick={() => window.location.reload()}>Retry</button>
-        </div>
-      ) : (
+      {hasLiveBootstrap ? (
         <>
           {!data.accounts.length && (
             <div className="rp-message error">
@@ -405,355 +625,491 @@ export function ReceivePaymentPage() {
               setup on the backend before posting payments.
             </div>
           )}
-          <fieldset className="rp-workspace" disabled={busy}>
-            <div className="rp-main">
-              <section className="rp-panel rp-customer">
-                <div className="rp-section-heading">
-                  <h2>
-                    <UserRound className="purple" size={17} />
-                    Customer
-                  </h2>
-                  <div className="rp-actions">
-                    <button
-                      disabled={!customer}
-                      onClick={() => setModal('ledger')}
-                    >
-                      Customer Ledger
-                    </button>
-                    <button onClick={() => setModal('customer')}>
-                      + Add New Customer
-                    </button>
-                  </div>
+          <fieldset className="rp-layout" disabled={busy}>
+            <div className="rp-workspace">
+              <nav className="rp-breadcrumb" aria-label="Breadcrumb">
+                <button onClick={() => navigate('/collections')}>
+                  Collections &amp; Receipts
+                </button>
+                <span>›</span>
+                <span>Receive Payment</span>
+              </nav>
+              <header className="rp-heading">
+                <img src={cashHandImg} alt="" />
+                <div>
+                  <h1>Receive Payment</h1>
+                  <p>
+                    Record money received from a customer and apply it to outstanding
+                    balances.
+                  </p>
                 </div>
-                <div className="rp-customer-inputs">
+              </header>
+              <div className="rp-main">
+                <section className="rp-panel rp-customer">
+                  <div className="rp-section-heading">
+                    <h2>
+                      <img alt="" aria-hidden="true" className="rp-customer-icon" src={humanIcon} />
+                      Customer
+                    </h2>
+                    <div className="rp-actions">
+                      <button
+                        disabled={!hasLiveBootstrap || !customer}
+                        onClick={() => setModal('ledger')}
+                      >
+                        Customer Ledger
+                      </button>
+                      <button disabled={!hasLiveBootstrap} onClick={() => setModal('customer')}>
+                        + Add New Customer
+                      </button>
+                    </div>
+                  </div>
+                  <div className="rp-customer-inputs">
+                    <label>
+                      Customer
+                      <select
+                        aria-invalid={validationAttempted && !customer}
+                        value={form.customer_key}
+                        onChange={(e) => {
+                          update('customer_key', e.target.value)
+                          update('applications', [])
+                        }}
+                      >
+                        <option value="">Select a customer</option>
+                        {data.customers.map((c) => (
+                          <option key={c.key} value={c.key}>
+                            {c.name} — {c.code}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Receipt Date *
+                      <input
+                        aria-invalid={validationAttempted && !form.receipt_date}
+                        type="date"
+                        value={form.receipt_date}
+                        onChange={(e) => update('receipt_date', e.target.value)}
+                      />
+                    </label>
+                    <label>
+                      Receipt No.
+                      <input value="[ Auto-generated ]" disabled />
+                    </label>
+                  </div>
+                  <div className="rp-customer-info">
+                    <div>
+                      <strong>{customer?.name || 'Select a customer'}</strong>
+                      <p>
+                        {customer
+                          ? `${customer.code}${customer.terms ? ` | Terms: ${customer.terms}` : ''} | Open items: ${items.length}`
+                          : 'Choose a customer to view outstanding balances.'}
+                      </p>
+                    </div>
+                    <div>
+                      <span>Outstanding Balance</span>
+                      <strong>{peso(outstanding)}</strong>
+                    </div>
+                  </div>
+                </section>
+                <section className="rp-panel rp-amount">
+                  <h2>
+                    <img
+                      alt=""
+                      aria-hidden="true"
+                      className="rp-amount-icon"
+                      src={cashHandImg}
+                    />
+                    Amount Received
+                  </h2>
                   <label>
-                    Customer
-                    <select
-                      value={form.customer_key}
-                      onChange={(e) => {
-                        update('customer_key', e.target.value)
-                        update('applications', [])
-                      }}
-                    >
-                      <option value="">Select a customer</option>
-                      {data.customers.map((c) => (
-                        <option key={c.key} value={c.key}>
-                          {c.name} — {c.code}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    Receipt Date *
+                    Amount Received (₱)
                     <input
-                      type="date"
-                      value={form.receipt_date}
-                      onChange={(e) => update('receipt_date', e.target.value)}
+                      aria-label="Amount received"
+                      aria-invalid={validationAttempted && received <= 0}
+                      type="number"
+                      min="0"
+                      max="999999999.99"
+                      step="0.01"
+                      value={form.amount}
+                      placeholder="0.00"
+                      onChange={(e) => changeAmount(e.target.value)}
                     />
                   </label>
-                  <label>
-                    Receipt No.
-                    <input value="[ Auto-generated ]" disabled />
-                  </label>
-                </div>
-                <div className="rp-customer-info">
-                  <div>
-                    <strong>{customer?.name || 'Select a customer'}</strong>
-                    <p>
-                      {customer
-                        ? `${customer.code}${customer.terms ? ` | Terms: ${customer.terms}` : ''} | Open items: ${items.length}`
-                        : 'Choose a customer to view outstanding balances.'}
-                    </p>
-                  </div>
-                  <div>
-                    <span>Outstanding Balance</span>
-                    <strong>{peso(outstanding)}</strong>
-                  </div>
-                </div>
-              </section>
-              <section className="rp-panel rp-amount">
-                <h2>
-                  <Banknote className="green" size={17} />
-                  Amount Received
-                </h2>
-                <label>
-                  Amount Received (₱)
-                  <input
-                    aria-label="Amount received"
-                    type="number"
-                    min="0"
-                    max="999999999.99"
-                    step="0.01"
-                    value={form.amount}
-                    placeholder="0.00"
-                    onChange={(e) => changeAmount(e.target.value)}
-                  />
-                </label>
-              </section>
-              <section className="rp-panel">
-                <div className="rp-section-heading">
-                  <h2>
-                    <CreditCard size={17} />
-                    Payment Method
-                  </h2>
-                  <button
-                    disabled={form.tenders.length >= 10}
-                    onClick={() =>
-                      update('tenders', [
-                        ...form.tenders,
-                        {
-                          ...emptyTender(),
-                          account_id:
-                            data.accounts.find((a) =>
-                              a.payment_methods.includes('Bank Transfer'),
-                            )?.id || '',
-                          amount: decimal(Math.max(0, received - tenderTotal)),
-                        },
-                      ])
-                    }
-                  >
-                    + Add Another Payment Method
-                  </button>
-                </div>
-                <div className="rp-table-scroll">
-                  <table className="rp-table rp-tenders">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Method</th>
-                        <th>Received Into (Cash Account)</th>
-                        <th>Reference No.</th>
-                        <th>Amount (₱)</th>
-                        <th>
-                          <span className="sr-only">Remove</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {form.tenders.map((t, index) => (
-                        <tr key={index}>
-                          <td>{index + 1}</td>
-                          <td>
-                            <select
-                              aria-label={`Payment method ${index + 1}`}
-                              value={t.method}
-                              onChange={(e) =>
-                                changeTender(index, {
-                                  method: e.target.value,
-                                  account_id:
-                                    data.accounts.find((a) =>
-                                      a.payment_methods.includes(
-                                        e.target.value,
-                                      ),
-                                    )?.id || '',
-                                })
-                              }
-                            >
-                              {data.payment_methods.map((m) => (
-                                <option key={m}>{m}</option>
-                              ))}
-                            </select>
-                          </td>
-                          <td>
-                            <select
-                              aria-label={`Cash account ${index + 1}`}
-                              value={t.account_id}
-                              onChange={(e) =>
-                                changeTender(index, {
-                                  account_id: e.target.value,
-                                })
-                              }
-                            >
-                              <option value="">Select account</option>
-                              {data.accounts
-                                .filter((a) =>
-                                  a.payment_methods.includes(t.method),
-                                )
-                                .map((a) => (
-                                  <option key={a.id} value={a.id}>
-                                    {a.name}
-                                  </option>
-                                ))}
-                            </select>
-                          </td>
-                          <td>
-                            <input
-                              aria-label={`Reference number ${index + 1}`}
-                              maxLength={120}
-                              value={t.reference}
-                              placeholder={
-                                t.method === 'Cash' ? 'Optional' : 'Required'
-                              }
-                              onChange={(e) =>
-                                changeTender(index, {
-                                  reference: e.target.value,
-                                })
-                              }
-                            />
-                          </td>
-                          <td>
-                            <input
-                              aria-label={`Payment amount ${index + 1}`}
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={t.amount}
-                              onChange={(e) =>
-                                changeTender(index, { amount: e.target.value })
-                              }
-                            />
-                          </td>
-                          <td>
-                            <button
-                              aria-label={`Remove payment method ${index + 1}`}
-                              disabled={form.tenders.length === 1}
-                              onClick={() =>
-                                update(
-                                  'tenders',
-                                  form.tenders.filter((_, i) => i !== index),
-                                )
-                              }
-                            >
-                              <X size={12} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {received > 0 && tenderTotal !== received && (
-                  <p className="rp-inline-error">
-                    Payment methods total {peso(tenderTotal)}. Difference:{' '}
-                    {peso(received - tenderTotal)}.
-                  </p>
-                )}
-              </section>
-              <section className="rp-panel rp-balances">
-                <div className="rp-section-heading">
-                  <h2>
-                    <List size={17} />
-                    Apply Payment to Open Balances
-                  </h2>
-                  <div className="rp-actions">
+                </section>
+                <section className="rp-panel">
+                  <div className="rp-section-heading">
+                    <h2>
+                      <img
+                        alt=""
+                        aria-hidden="true"
+                        className="rp-payment-icon"
+                        src={cardIcon}
+                      />
+                      Payment Method
+                    </h2>
                     <button
-                      disabled={!items.length || received <= 0}
-                      onClick={autoApply}
+                      disabled={form.tenders.length >= 10}
+                      onClick={() =>
+                        update('tenders', [
+                          ...form.tenders,
+                          {
+                            ...emptyTender(),
+                            account_id:
+                              data.accounts.find((a) =>
+                                a.payment_methods.includes('Bank Transfer'),
+                              )?.id || '',
+                            amount: decimal(Math.max(0, received - tenderTotal)),
+                          },
+                        ])
+                      }
                     >
-                      Auto Apply
-                    </button>
-                    <select
-                      aria-label="Allocation order"
-                      value={order}
-                      onChange={(e) => setOrder(e.target.value)}
-                    >
-                      <option value="oldest">Oldest due first</option>
-                      <option value="newest">Newest due first</option>
-                    </select>
-                    <button onClick={() => update('applications', [])}>
-                      Clear
+                      + Add Another Payment Method
                     </button>
                   </div>
-                </div>
-                <div className="rp-table-scroll">
-                  <table className="rp-table rp-invoices">
-                    <thead>
-                      <tr>
-                        <th>
-                          <input
-                            type="checkbox"
-                            aria-label="Select all open balances"
-                            checked={
-                              items.length > 0 &&
-                              items.every((i) => !!allocation(i.id))
-                            }
-                            onChange={(e) =>
-                              update(
-                                'applications',
-                                e.target.checked
-                                  ? items.map((i) => ({
-                                      sale_id: i.id,
-                                      amount: decimal(i.balance_cents),
-                                    }))
-                                  : [],
-                              )
-                            }
-                          />
-                        </th>
-                        <th>Document No.</th>
-                        <th>Date</th>
-                        <th>Due Date</th>
-                        <th>Total Amount</th>
-                        <th>Balance Due</th>
-                        <th>Apply Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {items.map((i) => (
-                        <tr key={i.id}>
-                          <td>
-                            <input
-                              aria-label={`Apply to ${i.document_number}`}
-                              type="checkbox"
-                              checked={!!allocation(i.id)}
-                              onChange={(e) =>
-                                setApplication(
-                                  i.id,
-                                  decimal(
-                                    Math.min(
-                                      i.balance_cents,
-                                      Math.max(0, received - applied),
-                                    ),
-                                  ),
-                                  e.target.checked,
-                                )
-                              }
-                            />
-                          </td>
-                          <td>{i.document_number}</td>
-                          <td>{i.date || '—'}</td>
-                          <td>{i.due_date || '—'}</td>
-                          <td>{peso(i.total_cents)}</td>
-                          <td>{peso(i.balance_cents)}</td>
-                          <td>
-                            <input
-                              aria-label={`Apply amount for ${i.document_number}`}
-                              type="number"
-                              min="0"
-                              max={decimal(i.balance_cents)}
-                              step="0.01"
-                              value={allocation(i.id)?.amount ?? ''}
-                              placeholder="0.00"
-                              onChange={(e) =>
-                                setApplication(
-                                  i.id,
-                                  e.target.value,
-                                  !!e.target.value,
-                                )
-                              }
-                            />
-                          </td>
-                        </tr>
-                      ))}
-                      {!items.length && (
+                  <div className="rp-table-scroll">
+                    <table className="rp-table rp-tenders">
+                      <thead>
                         <tr>
-                          <td colSpan={7} className="rp-empty">
-                            No outstanding sales for this customer. You can
-                            receive an advance as unapplied customer credit.
-                          </td>
+                          <th>#</th>
+                          <th>Method</th>
+                          <th>Received Into (Cash Account)</th>
+                          <th>Reference No.</th>
+                          <th>Amount (₱)</th>
+                          <th>
+                            <span className="sr-only">Remove</span>
+                          </th>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {form.tenders.map((t, index) => (
+                          <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td>
+                              <select
+                                aria-label={`Payment method ${index + 1}`}
+                                aria-invalid={validationAttempted && !t.method}
+                                value={t.method}
+                                onChange={(e) =>
+                                  changeTender(index, {
+                                    method: e.target.value,
+                                    account_id:
+                                      data.accounts.find((a) =>
+                                        a.payment_methods.includes(
+                                          e.target.value,
+                                        ),
+                                      )?.id || '',
+                                  })
+                                }
+                              >
+                                {data.payment_methods.map((m) => (
+                                  <option key={m}>{m}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td>
+                              <select
+                                aria-label={`Cash account ${index + 1}`}
+                                aria-invalid={validationAttempted && !tenderHasAccount(t)}
+                                value={t.account_id}
+                                onChange={(e) =>
+                                  changeTender(index, {
+                                    account_id: e.target.value,
+                                  })
+                                }
+                              >
+                                <option value="">Select account</option>
+                                {data.accounts
+                                  .filter((a) =>
+                                    a.payment_methods.includes(t.method),
+                                  )
+                                  .map((a) => (
+                                    <option key={a.id} value={a.id}>
+                                      {a.name}
+                                    </option>
+                                  ))}
+                              </select>
+                            </td>
+                            <td>
+                              <input
+                                aria-label={`Reference number ${index + 1}`}
+                                aria-invalid={
+                                  validationAttempted &&
+                                  t.method !== 'Cash' &&
+                                  !t.reference.trim()
+                                }
+                                maxLength={120}
+                                value={t.reference}
+                                placeholder={
+                                  t.method === 'Cash' ? 'Optional' : 'Required'
+                                }
+                                onChange={(e) =>
+                                  changeTender(index, {
+                                    reference: e.target.value,
+                                  })
+                                }
+                              />
+                            </td>
+                            <td>
+                              <input
+                                aria-label={`Payment amount ${index + 1}`}
+                                aria-invalid={
+                                  validationAttempted &&
+                                  (cents(t.amount) <= 0 || tenderTotal !== received)
+                                }
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={t.amount}
+                                onChange={(e) =>
+                                  changeTender(index, { amount: e.target.value })
+                                }
+                              />
+                            </td>
+                            <td>
+                              <button
+                                aria-label={`Remove payment method ${index + 1}`}
+                                disabled={form.tenders.length === 1}
+                                onClick={() =>
+                                  update(
+                                    'tenders',
+                                    form.tenders.filter((_, i) => i !== index),
+                                  )
+                                }
+                              >
+                                <X size={12} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {received > 0 && tenderTotal !== received && (
+                    <p className="rp-inline-error">
+                      Payment methods total {peso(tenderTotal)}. Difference:{' '}
+                      {peso(received - tenderTotal)}.
+                    </p>
+                  )}
+                </section>
+                <section className="rp-panel rp-balances">
+                  <div className="rp-section-heading">
+                    <h2>
+                      <img
+                        alt=""
+                        aria-hidden="true"
+                        className="rp-ledger-icon"
+                        src={customerLedgerIcon}
+                      />
+                      Apply Payment to Open Balances
+                    </h2>
+                    <div className="rp-actions">
+                      <button
+                        disabled={!items.length || received <= 0}
+                        onClick={autoApply}
+                      >
+                        Auto Apply
+                      </button>
+                      <select
+                        aria-label="Allocation order"
+                        value={order}
+                        onChange={(e) => setOrder(e.target.value)}
+                      >
+                        <option value="oldest">Oldest due first</option>
+                        <option value="newest">Newest due first</option>
+                      </select>
+                      <button onClick={() => update('applications', [])}>
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                  <div className="rp-table-scroll">
+                    <table className="rp-table rp-invoices">
+                      <thead>
+                        <tr>
+                          <th>
+                            <input
+                              type="checkbox"
+                              aria-label="Select all open balances"
+                              checked={
+                                items.length > 0 &&
+                                items.every((i) => !!allocation(i.id))
+                              }
+                              onChange={(e) =>
+                                update(
+                                  'applications',
+                                  e.target.checked
+                                    ? items.map((i) => ({
+                                        sale_id: i.id,
+                                        amount: decimal(i.balance_cents),
+                                      }))
+                                    : [],
+                                )
+                              }
+                            />
+                          </th>
+                          <th>Document No.</th>
+                          <th>Date</th>
+                          <th>Due Date</th>
+                          <th>Total Amount</th>
+                          <th>Balance Due</th>
+                          <th>Apply Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {items.map((i) => (
+                          <tr key={i.id}>
+                            <td>
+                              <input
+                                aria-label={`Apply to ${i.document_number}`}
+                                type="checkbox"
+                                checked={!!allocation(i.id)}
+                                onChange={(e) =>
+                                  setApplication(
+                                    i.id,
+                                    decimal(
+                                      Math.min(
+                                        i.balance_cents,
+                                        Math.max(0, received - applied),
+                                      ),
+                                    ),
+                                    e.target.checked,
+                                  )
+                                }
+                              />
+                            </td>
+                            <td>{i.document_number}</td>
+                            <td>{i.date || '—'}</td>
+                            <td>{i.due_date || '—'}</td>
+                            <td>{peso(i.total_cents)}</td>
+                            <td>{peso(i.balance_cents)}</td>
+                            <td>
+                              <input
+                                aria-label={`Apply amount for ${i.document_number}`}
+                                aria-invalid={
+                                  validationAttempted &&
+                                  !!allocation(i.id) &&
+                                  (cents(allocation(i.id)!.amount) <= 0 ||
+                                    cents(allocation(i.id)!.amount) > i.balance_cents ||
+                                    applied > received)
+                                }
+                                type="number"
+                                min="0"
+                                max={decimal(i.balance_cents)}
+                                step="0.01"
+                                value={allocation(i.id)?.amount ?? ''}
+                                placeholder="0.00"
+                                onChange={(e) =>
+                                  setApplication(
+                                    i.id,
+                                    e.target.value,
+                                    !!e.target.value,
+                                  )
+                                }
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                        {!items.length && (
+                          <tr>
+                            <td colSpan={7} className="rp-empty">
+                              No outstanding sales for this customer. You can
+                              receive an advance as unapplied customer credit.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+
+              </div>
+              <aside className="rp-panel rp-summary">
+                <h2>
+                  <img
+                    alt=""
+                    aria-hidden="true"
+                    className="rp-summary-icon"
+                    src={calculatorIcon}
+                  />
+                  Payment Summary
+                </h2>
+                <dl>
+                  <div>
+                    <dt>Amount Received</dt>
+                    <dd>{peso(received)}</dd>
+                  </div>
+                  <div>
+                    <dt>Applied to Balances</dt>
+                    <dd>{peso(applied)}</dd>
+                  </div>
+                  <div>
+                    <dt>Unapplied Amount</dt>
+                    <dd className={received < applied ? 'rp-inline-error' : ''}>
+                      {peso(received - applied)}
+                    </dd>
+                  </div>
+                </dl>
+                <hr />
+                {form.tenders.map((t, i) => (
+                  <dl key={i} className="rp-summary-tender">
+                    <div>
+                      <dt>
+                        Payment Method{form.tenders.length > 1 ? ` ${i + 1}` : ''}
+                      </dt>
+                      <dd>{t.method}</dd>
+                    </div>
+                    <div>
+                      <dt>Received Into</dt>
+                      <dd>
+                        {data.accounts.find((a) => a.id === t.account_id)?.name ||
+                          '—'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Reference No.</dt>
+                      <dd>{t.reference || '—'}</dd>
+                    </div>
+                  </dl>
+                ))}
+                <hr />
+                <div className="rp-application-summary">
+                  <span>Payment Application</span>
+                  <strong>
+                    {form.applications.filter((a) => cents(a.amount) > 0).length}{' '}
+                    open balances will be updated
+                  </strong>
+                  <span>Remaining Customer Balance</span>
+                  <strong>{peso(Math.max(0, outstanding - applied))}</strong>
                 </div>
-              </section>
+                <p className="rp-summary-note">
+                  <span className="rp-summary-note-icon" aria-hidden="true">
+                    i
+                  </span>
+                  <span>
+                    Posting creates a Payment Receipt and updates the selected
+                    balances. You can print or send the receipt afterward.
+                  </span>
+                </p>
+              </aside>
+            </div>
+            <div className="rp-bottom-row">
               <details className="rp-panel rp-remarks">
                 <summary>
-                  <MessageCircle size={15} />
+                  <img
+                    alt=""
+                    aria-hidden="true"
+                    className="rp-message-icon"
+                    src={messageIcon}
+                  />
                   <span>
                     <strong>Remarks &amp; Attachments</strong>
                     <small>Add a note or attach proof of payment</small>
                   </span>
+                  <ChevronDown
+                    aria-hidden="true"
+                    className="rp-remarks-chevron"
+                    size={22}
+                  />
                 </summary>
                 <label className="sr-only" htmlFor="payment-remarks">
                   Remarks
@@ -798,116 +1154,66 @@ export function ReceivePaymentPage() {
                   </div>
                 ))}
               </details>
-            </div>
-            <aside className="rp-panel rp-summary">
-              <h2>
-                <ReceiptText size={18} />
-                Payment Summary
-              </h2>
-              <dl>
-                <div>
-                  <dt>Amount Received</dt>
-                  <dd>{peso(received)}</dd>
+              <div className="rp-actions-area">
+                <footer className="rp-footer">
+                  <button
+                    disabled={busy}
+                    onClick={() => {
+                      if (
+                        (form.amount || form.remarks || form.attachments.length) &&
+                        !window.confirm(
+                          'Leave this payment? Unsaved changes will be lost.',
+                        )
+                      )
+                        return
+                      navigate('/collections')
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    disabled={busy || !hasLiveBootstrap}
+                    onClick={() =>
+                      void run(async () => {
+                        const result = await collectionRequest<{ data: DraftRow[] }>(
+                          'drafts',
+                        )
+                        setDrafts(result.data)
+                        setModal('drafts')
+                      })
+                    }
+                  >
+                    Load Draft
+                  </button>
+                  <button disabled={busy || !hasLiveBootstrap} onClick={() => void saveDraft()}>
+                    Save as Draft
+                  </button>
+                  <button disabled={busy} onClick={previewReceipt}>
+                    Preview Receipt
+                  </button>
+                  <button
+                    className="primary"
+                    disabled={busy || !hasLiveBootstrap || !data.accounts.length}
+                    onClick={() => void post()}
+                  >
+                    {busy ? 'Please wait…' : 'Post & Issue Receipt'}
+                  </button>
+                </footer>
+                <div className="rp-history-link">
+                  <button onClick={() => navigate('/collections/receipts')}>
+                    View Receipt History →
+                  </button>
                 </div>
-                <div>
-                  <dt>Applied to Balances</dt>
-                  <dd>{peso(applied)}</dd>
-                </div>
-                <div>
-                  <dt>Unapplied Amount</dt>
-                  <dd className={received < applied ? 'rp-inline-error' : ''}>
-                    {peso(received - applied)}
-                  </dd>
-                </div>
-              </dl>
-              <hr />
-              {form.tenders.map((t, i) => (
-                <dl key={i} className="rp-summary-tender">
-                  <div>
-                    <dt>
-                      Payment Method{form.tenders.length > 1 ? ` ${i + 1}` : ''}
-                    </dt>
-                    <dd>{t.method}</dd>
-                  </div>
-                  <div>
-                    <dt>Received Into</dt>
-                    <dd>
-                      {data.accounts.find((a) => a.id === t.account_id)?.name ||
-                        '—'}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Reference No.</dt>
-                    <dd>{t.reference || '—'}</dd>
-                  </div>
-                </dl>
-              ))}
-              <hr />
-              <div className="rp-application-summary">
-                <span>Payment Application</span>
-                <strong>
-                  {form.applications.filter((a) => cents(a.amount) > 0).length}{' '}
-                  open balances will be updated
-                </strong>
-                <span>Remaining Customer Balance</span>
-                <strong>{peso(Math.max(0, outstanding - applied))}</strong>
               </div>
-              <p className="rp-summary-note">
-                ⓘ Posting issues a payment receipt and updates the selected
-                balances. Unapplied money remains as customer credit.
-              </p>
-            </aside>
+            </div>
           </fieldset>
-          <footer className="rp-footer">
-            <button
-              disabled={busy}
-              onClick={() => {
-                if (
-                  (form.amount || form.remarks || form.attachments.length) &&
-                  !window.confirm(
-                    'Leave this payment? Unsaved changes will be lost.',
-                  )
-                )
-                  return
-                navigate('/collections')
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              disabled={busy}
-              onClick={() =>
-                void run(async () => {
-                  const result = await collectionRequest<{ data: DraftRow[] }>(
-                    'drafts',
-                  )
-                  setDrafts(result.data)
-                  setModal('drafts')
-                })
-              }
-            >
-              Load Draft
-            </button>
-            <button disabled={busy} onClick={() => void saveDraft()}>
-              Save as Draft
-            </button>
-            <button disabled={busy} onClick={previewReceipt}>
-              Preview Receipt
-            </button>
-            <button
-              className="primary"
-              disabled={busy || !data.accounts.length}
-              onClick={() => void post()}
-            >
-              {busy ? 'Please wait…' : 'Post & Issue Receipt'}
-            </button>
-          </footer>
-          <div className="rp-history-link">
-            <button onClick={() => navigate('/collections/receipts')}>
-              View Receipt History →
-            </button>
-          </div>
         </>
+      ) : bootstrapLoading ? (
+        <ReceivePaymentSkeleton />
+      ) : (
+        <div className="rp-panel rp-bootstrap-unavailable" role="status">
+          Customer and open balance data could not be loaded. Use Retry to try again.
+        </div>
       )}
       {receipt && (
         <PaymentReceipt
