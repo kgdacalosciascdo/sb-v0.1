@@ -91,7 +91,11 @@ export function PurchaseSystemPanel({
           {error || requestError}
         </p>
       )}
-      {loading && !data && <p role="status">Loading…</p>}
+      {(variant.startsWith('stock')
+        ? !stock && !requestError
+        : variant.startsWith('cash')
+          ? !cash && !requestError
+          : loading) && <p role="status">Fetching data…</p>}
       {variant === 'summary' && data && (
         <div className="purchase-live-metrics">
           <Link to="/purchases/history">
@@ -135,7 +139,7 @@ export function PurchaseSystemPanel({
                   <td>{peso(p.outstanding_cents)}</td>
                 </tr>
               ))}
-              {!data.payables.length && (
+              {!loading && !error && !data.payables.length && (
                 <tr>
                   <td colSpan={3}>No supplier balances due.</td>
                 </tr>

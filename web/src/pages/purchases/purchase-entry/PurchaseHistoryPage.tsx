@@ -29,12 +29,20 @@ export function PurchaseHistoryPage() {
   const [meta, setMeta] = useState({ total: 0, last_page: 1 })
   const [overview, setOverview] = useState<Overview | null>(null)
   const [bootstrap, setBootstrap] = useState<PurchaseBootstrap | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [historyKey, setHistoryKey] = useState('')
+  const [overviewVersion, setOverviewVersion] = useState(-1)
+  const [historyError, setHistoryError] = useState('')
+  const [overviewError, setOverviewError] = useState('')
   const [error, setError] = useState('')
   const [record, setRecord] = useState<PurchaseRecord | null>(null)
   const [payment, setPayment] = useState<PurchaseRecord | null>(null)
   const [busy, setBusy] = useState(false)
   const [refresh, setRefresh] = useState(0)
+  const requestKey = `${page}:${supplier}:${refresh}`
+  const loading = isPayables
+    ? overviewVersion !== refresh
+    : historyKey !== requestKey
+  const fetchError = loading ? '' : isPayables ? overviewError : historyError
   const [amount, setAmount] = useState('')
   const [method, setMethod] = useState('Bank Transfer')
   const [account, setAccount] = useState('')
@@ -44,31 +52,54 @@ export function PurchaseHistoryPage() {
     null,
   )
   useEffect(() => {
+    if (isPayables) return
     let active = true
-    Promise.all([
-      purchaseRequest<{ data: PurchaseRow[]; meta: typeof meta }>(
-        `?page=${page}${supplier ? `&supplier_id=${encodeURIComponent(supplier)}` : ''}`,
-      ),
-      purchaseRequest<{ data: Overview }>('overview'),
-      purchaseRequest<{ data: PurchaseBootstrap }>('bootstrap'),
-    ])
-      .then(([history, summary, options]) => {
+    purchaseRequest<{ data: PurchaseRow[]; meta: typeof meta }>(
+      `?page=${page}${supplier ? `&supplier_id=${encodeURIComponent(supplier)}` : ''}`,
+    )
+      .then((history) => {
         if (!active) return
         setRows(history.data)
         setMeta(history.meta)
-        setOverview(summary.data)
-        setBootstrap(options.data)
+        setHistoryError('')
       })
       .catch((e) => {
-        if (active) setError(e.message)
+        if (active) setHistoryError(e.message)
       })
       .finally(() => {
-        if (active) setLoading(false)
+        if (active) setHistoryKey(requestKey)
       })
     return () => {
       active = false
     }
-  }, [page, supplier, refresh])
+  }, [page, supplier, refresh, requestKey, isPayables])
+  useEffect(() => {
+    let active = true
+    purchaseRequest<{ data: Overview }>('overview')
+      .then((summary) => {
+        if (active) {
+          setOverview(summary.data)
+          setOverviewError('')
+        }
+      })
+      .catch((e) => {
+        if (active) setOverviewError(e.message)
+      })
+      .finally(() => {
+        if (active) setOverviewVersion(refresh)
+      })
+    purchaseRequest<{ data: PurchaseBootstrap }>('bootstrap')
+      .then((options) => {
+        if (active) setBootstrap(options.data)
+      })
+      .catch((e) => {
+        if (active)
+          setError(`Payment options could not be loaded: ${e.message}`)
+      })
+    return () => {
+      active = false
+    }
+  }, [refresh])
   async function open(id: string, pay = false) {
     setBusy(true)
     setError('')
@@ -153,6 +184,14 @@ export function PurchaseHistoryPage() {
     bootstrap?.accounts.filter((a) =>
       a.payment_methods.includes(method === 'Check' ? 'Cheque' : method),
     ) || []
+  const visiblePayables = (overview?.payables || [])
+    .filter((p) => !supplier || p.supplier_id === supplier)
+    .filter((p) => !overdueOnly || p.due_date < (overview?.today || ''))
+    .filter((p) =>
+      `${p.purchase_number} ${p.supplier_name} ${p.supplier_invoice_number}`
+        .toLowerCase()
+        .includes(search.toLowerCase()),
+    )
   return (
     <div className="purchase-register">
       <h1>
@@ -171,10 +210,19 @@ export function PurchaseHistoryPage() {
         <Link to={isPayables ? '/purchases/history' : '/purchases/payables'}>
           {isPayables ? 'All Purchases' : 'Supplier Payables'}
         </Link>
+        <button
+          disabled={loading}
+          onClick={() => {
+            setError('')
+            setRefresh((v) => v + 1)
+          }}
+        >
+          Refresh / Retry
+        </button>
       </div>
-      {error && (
+      {(error || fetchError) && (
         <div className="pe-message pe-error" role="alert">
-          {error}
+          {fetchError || error}
         </div>
       )}
       {overview && (
@@ -202,7 +250,6 @@ export function PurchaseHistoryPage() {
           aria-label="Filter purchases by supplier"
           value={supplier}
           onChange={(e) => {
-            setLoading(true)
             setSupplier(e.target.value)
             setPage(1)
           }}
@@ -220,7 +267,15 @@ export function PurchaseHistoryPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <span>{meta.total} purchases</span>
+        <span>
+          {loading
+            ? 'Fetching data…'
+            : fetchError
+              ? 'Data unavailable'
+              : isPayables
+                ? `${visiblePayables.length} outstanding balances`
+                : `${meta.total} purchases`}
+        </span>
       </div>
       {isPayables ? (
         <section className="pe-panel">
@@ -236,17 +291,21 @@ export function PurchaseHistoryPage() {
                 </tr>
               </thead>
               <tbody>
-                {overview?.payables
-                  .filter((p) => !supplier || p.supplier_id === supplier)
-                  .filter(
-                    (p) => !overdueOnly || p.due_date < (overview?.today || ''),
-                  )
-                  .filter((p) =>
-                    `${p.purchase_number} ${p.supplier_name} ${p.supplier_invoice_number}`
-                      .toLowerCase()
-                      .includes(search.toLowerCase()),
-                  )
-                  .map((p) => (
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} role="status">
+                      Fetching supplier balances…
+                    </td>
+                  </tr>
+                ) : fetchError ? (
+                  <tr>
+                    <td colSpan={5}>
+                      Unable to load supplier balances. Please use Refresh /
+                      Retry.
+                    </td>
+                  </tr>
+                ) : (
+                  visiblePayables.map((p) => (
                     <tr key={p.id}>
                       <td>
                         {p.purchase_number}
@@ -259,7 +318,7 @@ export function PurchaseHistoryPage() {
                       <td>{peso(p.outstanding_cents)}</td>
                       <td>
                         <button
-                          disabled={busy}
+                          disabled={busy || !bootstrap}
                           onClick={() => void open(p.purchase_id, true)}
                         >
                           Pay Supplier
@@ -272,10 +331,15 @@ export function PurchaseHistoryPage() {
                         </button>
                       </td>
                     </tr>
-                  ))}
-                {!overview?.payables.length && (
+                  ))
+                )}
+                {!loading && !fetchError && !visiblePayables.length && (
                   <tr>
-                    <td colSpan={5}>No outstanding supplier balances.</td>
+                    <td colSpan={5}>
+                      {overview?.payables.length
+                        ? 'No supplier balances match your filters.'
+                        : 'No outstanding supplier balances.'}
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -285,7 +349,9 @@ export function PurchaseHistoryPage() {
       ) : (
         <section className="pe-panel">
           {loading ? (
-            <p role="status">Loading purchases…</p>
+            <p role="status">Fetching purchases…</p>
+          ) : fetchError ? (
+            <p>Unable to load purchases. Please use Refresh / Retry.</p>
           ) : (
             <div className="purchase-register-table">
               <table>
@@ -318,7 +384,7 @@ export function PurchaseHistoryPage() {
                         </button>
                         {r.due_cents > 0 && (
                           <button
-                            disabled={busy}
+                            disabled={busy || !bootstrap}
                             onClick={() => void open(r.id, true)}
                           >
                             Pay Supplier
@@ -340,7 +406,6 @@ export function PurchaseHistoryPage() {
             <button
               disabled={page <= 1 || loading}
               onClick={() => {
-                setLoading(true)
                 setPage((p) => p - 1)
               }}
             >
@@ -352,7 +417,6 @@ export function PurchaseHistoryPage() {
             <button
               disabled={page >= meta.last_page || loading}
               onClick={() => {
-                setLoading(true)
                 setPage((p) => p + 1)
               }}
             >

@@ -2,6 +2,15 @@
 
 Updated: 2026-10-08. Owner: Kyle. Coordination: read `docs/jhonel.md` (empty) and `docs/jhonel-md/purchases.md`; neither was changed. Jhonel's landing card layout, drag order, collapse behavior, icons, and existing shell were retained.
 
+## 2026-10-08 follow-up — loading and transient request failures
+
+- Supplier Payables now displays “Fetching supplier balances…” until the balance read completes; history/counts also distinguish loading, failure, filtered-empty and confirmed-empty states. Failed reads show a retryable error, never a false zero balance.
+- Balance/history/options reads resolve independently, so slow bootstrap cannot hide a loaded credit purchase. Payables does not fetch unused paginated history; supplier filters do not refetch all balances. Refresh / Retry reloads data after errors or changes.
+- API helper shares simultaneous identical GET requests, including StrictMode mounts and multiple purchase panels. There is no completed-response cache, so navigation after posting gets fresh balances. Read-only 429s receive bounded retries (up to three attempts), honoring readable Retry-After values up to 60 seconds; network/CORS failures receive one delayed read retry. Writes are never automatically retried.
+- Landing cards and live supplier panels no longer display empty-state messages/zero placeholders while their reads are pending or have failed.
+- Production bootstrap was checked read-only: HTTP 200 and correct `Access-Control-Allow-Origin: https://sb-ph.vercel.app`. The supplied screenshot showed a transient 429 without that header; its exact upstream source was not reproduced. No CORS wildcard, auth bypass, database edits or backend throttle removal was made.
+- Browser regression now covers delayed balances, independent bootstrap latency, GET deduplication, 429 recovery and failed-read/manual retry. Build and targeted lint pass. Redeploy Vercel to activate the frontend fix; no migration is required.
+
 ## Pages and interaction
 
 - `/purchases`: live purchase totals, attention counts and recent records replace three mock cards. Action cards open cash/credit purchase entry or supplier payables. History, supplier ledger, receipt and overdue links connect to live data.
