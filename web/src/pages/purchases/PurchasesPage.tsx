@@ -3,19 +3,17 @@ import { RotateCcw } from 'lucide-react'
 import truckIcon from '../../assets/icons/truck.png'
 import './purchases.css'
 import { PurchasesActionCards } from './components/PurchasesActionCards'
-import { PurchasesNeedsAttentionCard } from './components/PurchasesNeedsAttentionCard'
-import { PurchasesOverviewCard } from './components/PurchasesOverviewCard'
+import { PurchasesLiveAttentionCard, PurchasesLiveOverviewCard, PurchasesLiveActivityCard } from './purchase-entry/PurchasesLiveCards'
 import { PurchasesMoreActionsCard } from './components/PurchasesMoreActionsCard'
-import { PurchasesRecentActivityCard } from './components/PurchasesRecentActivityCard'
 import { PurchasesReportsCard } from './components/PurchasesReportsCard'
 import { PurchasesRecordsLedgersCard } from './components/PurchasesRecordsLedgersCard'
 import { usePurchasesCardOrder, type PurchasesCardId } from '../../hooks/usePurchasesCardOrder'
 
 const CARD_COMPONENTS: Record<PurchasesCardId, React.ComponentType> = {
-  'needs-attention': PurchasesNeedsAttentionCard,
-  'overview': PurchasesOverviewCard,
+  'needs-attention': PurchasesLiveAttentionCard,
+  'overview': PurchasesLiveOverviewCard,
   'more-actions': PurchasesMoreActionsCard,
-  'recent-activity': PurchasesRecentActivityCard,
+  'recent-activity': PurchasesLiveActivityCard,
   'reports': PurchasesReportsCard,
   'records-ledgers': PurchasesRecordsLedgersCard,
 }
@@ -123,7 +121,7 @@ export function PurchasesPage() {
           />
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-              Purchases &amp; Payables
+              Purchases &amp; Suppliers
             </h1>
             <p className="text-xs text-slate-600 sm:text-[13px]">
               Buy goods and services, receive items, track what you owe, and manage suppliers.

@@ -12,6 +12,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www/html
+RUN printf 'post_max_size=20M\nupload_max_filesize=10M\n' > /usr/local/etc/php/conf.d/simplebiz-uploads.ini
 COPY --from=dependencies /app/vendor ./vendor
 COPY . .
 

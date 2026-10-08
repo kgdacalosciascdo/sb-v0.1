@@ -1,6 +1,7 @@
 import { useState, type DragEvent } from 'react'
 import { RotateCcw } from 'lucide-react'
 import dashboardIcon from '../../assets/icons/dashboard.png'
+import { PurchaseSystemPanel } from '../purchases/purchase-entry/PurchaseSystemPanel'
 import './dashboard.css'
 import { DashboardActionCards } from './components/DashboardActionCards'
 import { NeedsAttentionCard } from './components/NeedsAttentionCard'
@@ -144,6 +145,8 @@ export function DashboardPage() {
           </button>
         )}
       </header>
+
+      <PurchaseSystemPanel />
 
       {/* Row 1: Primary Action Cards (Sales, Collections, Purchases, Payments, Inventory) */}
       <section

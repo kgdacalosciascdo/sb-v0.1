@@ -1,3 +1,17 @@
+## 2026-10-08 — Purchases frontend, API, and Supabase integration
+
+- Current handoff: [Purchases & Suppliers](kyle-md/purchases.md). Deployment/API contract: [Purchases API](../backend/docs/PURCHASES_API.md).
+- Implemented reference-style purchase entry, full/partial/pay-later payments, same-day checks/pending PDC, notes/proof, server drafts, printable preview/details, history, supplier directory and later settlement.
+- Posting connects supplier payables, tracked stock receipts, supplier payment/cash outflow and audit atomically. Landing purchase KPIs, Dashboard summary, Payments, Inventory, Cash Accounts and Master Registries supplier links consume the new records.
+- API controller stays in `app/Http/API`, models in `app/Models`, services in `app/Services`, routes in `routes/api.php`. No new Modules architecture or login work.
+- Supabase purchase migration and reference seed applied successfully; no live test purchases/payments/stock/opening balances added. Updated Docker PHP request-size limits without adding paid Render services.
+- Read `docs/jhonel.md` and `docs/jhonel-md/purchases.md`; neither was modified. Current task entry is in this file and the linked page handoff.
+- Frontend build, targeted lint, 30 backend tests / 192 assertions, Pint, purchase browser regression and Receive Payment regression pass. Full lint retains 10 existing DatePicker/Sales errors; build retains a large-chunk warning. Live bootstrap/overview/stock/cash endpoints returned HTTP 200; RLS is enabled on all nine new tables.
+- Merge hotspots: shared routes/navigation, landing/action maps, ProductService, Dockerfile, frontend package script and this log. Existing sidebar design and Home were not changed.
+- Render/Vercel redeployment remains required. Retains public demo API scope for test data only. Purchase orders, returns/reversals, complete stock/GL/bank balances, supplier editing and authentication remain deferred; no next phase started.
+
+---
+
 ## 2026-09-29 — Receive Payment frontend, API, and Supabase storage
 
 - Current handoff: [Receive Payment](kyle-md/receive-payment.md). API/deployment notes: [Receive Payments API](../backend/docs/RECEIVE_PAYMENTS_API.md).

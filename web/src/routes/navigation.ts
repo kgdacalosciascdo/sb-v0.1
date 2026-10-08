@@ -41,7 +41,7 @@ export const primaryNavigation: NavigationItem[] = [
     description: "Business overview and priorities",
   },
   {
-    label: "Sales & Receivables",
+    label: "Sales & Customers",
     path: "/sales",
     icon: ShoppingCart,
     imageIcon: cashierIcon,
@@ -55,7 +55,7 @@ export const primaryNavigation: NavigationItem[] = [
     description: "Money received and customer collections",
   },
   {
-    label: "Purchases & Payables",
+    label: "Purchases & Suppliers",
     path: "/purchases",
     icon: Truck,
     imageIcon: truckIcon,

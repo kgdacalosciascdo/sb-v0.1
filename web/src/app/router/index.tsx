@@ -14,6 +14,9 @@ import { CollectionsPage } from '../../pages/collections/CollectionsPage'
 import { ReceivePaymentPage } from '../../pages/collections/receive-payment/ReceivePaymentPage'
 import { CollectionReceiptHistoryPage } from '../../pages/collections/receive-payment/CollectionReceiptHistoryPage'
 import { PurchasesPage } from '../../pages/purchases/PurchasesPage'
+import { PurchaseEntryPage } from '../../pages/purchases/purchase-entry/PurchaseEntryPage'
+import { PurchaseHistoryPage } from '../../pages/purchases/purchase-entry/PurchaseHistoryPage'
+import { SuppliersPage } from '../../pages/purchases/purchase-entry/SuppliersPage'
 import { PaymentsPage } from '../../pages/payments/PaymentsPage'
 import { InventoryPage } from '../../pages/inventory/InventoryPage'
 import { CashAccountsPage } from '../../pages/cash-accounts/CashAccountsPage'
@@ -49,6 +52,10 @@ export function AppRouter() {
             <Route path="/collections/receive-payment" element={<ReceivePaymentPage />} />
             <Route path="/collections/receipts" element={<CollectionReceiptHistoryPage />} />
             <Route path="/purchases" element={<PurchasesPage />} />
+            <Route path="/purchases/entry" element={<PurchaseEntryPage />} />
+            <Route path="/purchases/history" element={<PurchaseHistoryPage />} />
+            <Route path="/purchases/payables" element={<PurchaseHistoryPage />} />
+            <Route path="/purchases/suppliers" element={<SuppliersPage />} />
             <Route path="/payments" element={<PaymentsPage />} />
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/cash-accounts" element={<CashAccountsPage />} />
