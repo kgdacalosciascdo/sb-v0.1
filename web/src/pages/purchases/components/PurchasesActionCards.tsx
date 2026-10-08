@@ -27,7 +27,7 @@ const ACTION_CARDS: ActionCardConfig[] = [
     borderClass: 'border-[#f59e0b]',
     textColor: 'text-slate-900',
     subtextColor: 'text-slate-700',
-    route: '#new-cash-purchase',
+    route: '/purchases/entry?payment=full',
   },
   {
     id: 'credit-purchase',
@@ -39,7 +39,7 @@ const ACTION_CARDS: ActionCardConfig[] = [
     borderClass: 'border-[#f59e0b]',
     textColor: 'text-slate-900',
     subtextColor: 'text-slate-700',
-    route: '#new-credit-purchase',
+    route: '/purchases/entry?payment=later',
   },
   {
     id: 'pay-supplier',
@@ -51,7 +51,7 @@ const ACTION_CARDS: ActionCardConfig[] = [
     borderClass: 'border-[#f59e0b]',
     textColor: 'text-slate-900',
     subtextColor: 'text-slate-700',
-    route: '#pay-supplier',
+    route: '/purchases/payables',
   },
 ]
 

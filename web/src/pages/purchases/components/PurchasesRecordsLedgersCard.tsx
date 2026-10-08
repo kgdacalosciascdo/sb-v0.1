@@ -19,7 +19,7 @@ const PURCHASE_LEDGERS: LedgerItem[] = [
     id: 'purchase-history',
     label: 'Purchase History',
     icon: truckImg,
-    href: '#purchase-history',
+    href: '/purchases/history',
   },
   {
     id: 'purchase-orders',
@@ -31,19 +31,19 @@ const PURCHASE_LEDGERS: LedgerItem[] = [
     id: 'supplier-ledgers',
     label: 'Supplier Ledgers',
     icon: penImg,
-    href: '#supplier-ledgers',
+    href: '/purchases/payables',
   },
   {
     id: 'receiving-reports',
     label: 'Receiving Reports',
     icon: receiveItemsImg,
-    href: '#receiving-reports',
+    href: '/inventory',
   },
   {
     id: 'overdue-payables',
     label: 'Overdue Payables',
     icon: overdueImg,
-    href: '#overdue-payables',
+    href: '/purchases/payables?overdue=1',
   },
   {
     id: 'purchase-returns',

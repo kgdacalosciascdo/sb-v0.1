@@ -1,6 +1,7 @@
 import { useState, type DragEvent } from 'react'
 import { RotateCcw } from 'lucide-react'
 import penIcon from '../../assets/icons/pen.png'
+import { PurchaseSystemPanel } from '../purchases/purchase-entry/PurchaseSystemPanel'
 import './payments.css'
 import { PaymentsActionCards } from './components/PaymentsActionCards'
 import { PaymentsNeedsAttentionCard } from './components/PaymentsNeedsAttentionCard'
@@ -144,6 +145,8 @@ export function PaymentsPage() {
           </button>
         )}
       </header>
+
+      <PurchaseSystemPanel variant="payables" />
 
       {/* Row 1: Primary Action Cards (Pay Supplier, Pay Expense, Other Payments) */}
       <section

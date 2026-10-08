@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import {
   CheckCircle2,
   CirclePause,
@@ -124,6 +125,7 @@ function AnimatedSummaryNumber({ target, delay }: { target: number; delay: numbe
 }
 
 export function MasterRegistriesPage() {
+  const navigate = useNavigate()
   return (
     <div className="w-full space-y-3.5 pb-4">
       <header className="animate-master-registries-header flex items-center gap-2.5 pt-0.5">
@@ -157,7 +159,7 @@ export function MasterRegistriesPage() {
                   </div>
                   <h2 className="mt-2.5 text-sm font-bold tracking-tight sm:text-[15px]">{card.title}</h2>
                   <p className="mt-1 line-clamp-2 min-h-8 text-[10.5px] leading-relaxed text-white/95">{card.description}</p>
-                  <button className="mt-3 rounded-lg border border-slate-300/80 bg-white px-2.5 py-1.5 text-center text-[11.5px] font-bold text-slate-800 shadow-sm transition hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" type="button">
+                  <button onClick={() => { if (card.title === 'Suppliers') navigate('/purchases/suppliers') }} className="mt-3 rounded-lg border border-slate-300/80 bg-white px-2.5 py-1.5 text-center text-[11.5px] font-bold text-slate-800 shadow-sm transition hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" type="button">
                     {card.action}
                   </button>
                 </article>
@@ -198,7 +200,7 @@ export function MasterRegistriesPage() {
             </div>
             <div className="space-y-1.5">
               {quickActions.map((action, index) => (
-                <button className={`flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-[10px] font-medium text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 ${index < 3 ? 'bg-sky-500 hover:bg-sky-600' : 'bg-violet-500 hover:bg-violet-600'}`} key={action} type="button">
+                <button onClick={() => { if (action === 'Add Supplier') navigate('/purchases/suppliers?add=1') }} className={`flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-[10px] font-medium text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 ${index < 3 ? 'bg-sky-500 hover:bg-sky-600' : 'bg-violet-500 hover:bg-violet-600'}`} key={action} type="button">
                   <Plus aria-hidden="true" className="size-3.5 shrink-0" strokeWidth={2.3} />
                   <span>{action}</span>
                 </button>

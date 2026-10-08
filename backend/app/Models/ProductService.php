@@ -11,10 +11,10 @@ class ProductService extends Model
 
     protected $table = 'products_services';
 
-    protected $fillable = ['id', 'company_id', 'code', 'name', 'type', 'unit_name', 'default_unit_price', 'default_tax_code_id', 'track_inventory', 'is_active'];
+    protected $fillable = ['id', 'company_id', 'code', 'name', 'type', 'unit_name', 'default_unit_price', 'default_purchase_cost', 'default_tax_code_id', 'track_inventory', 'is_active'];
 
     protected function casts(): array
     {
-        return ['default_unit_price' => 'decimal:2', 'track_inventory' => 'boolean', 'is_active' => 'boolean'];
+        return ['default_unit_price' => 'decimal:2', 'default_purchase_cost' => 'decimal:2', 'track_inventory' => 'boolean', 'is_active' => 'boolean'];
     }
 }

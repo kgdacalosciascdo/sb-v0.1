@@ -4,18 +4,17 @@ import cartonIcon from '../../assets/icons/carton.png'
 import './inventory.css'
 import { InventoryActionCards } from './components/InventoryActionCards'
 import { InventoryNeedsAttentionCard } from './components/InventoryNeedsAttentionCard'
-import { InventoryOverviewCard } from './components/InventoryOverviewCard'
+import { PurchaseSystemPanel } from '../purchases/purchase-entry/PurchaseSystemPanel'
 import { InventoryMoreActionsCard } from './components/InventoryMoreActionsCard'
-import { InventoryRecentMovementsCard } from './components/InventoryRecentMovementsCard'
 import { InventoryReportsCard } from './components/InventoryReportsCard'
 import { InventoryRecordsLedgersCard } from './components/InventoryRecordsLedgersCard'
 import { useInventoryCardOrder, type InventoryCardId } from '../../hooks/useInventoryCardOrder'
 
 const CARD_COMPONENTS: Record<InventoryCardId, React.ComponentType> = {
   'needs-attention': InventoryNeedsAttentionCard,
-  'overview': InventoryOverviewCard,
+  'overview': () => <PurchaseSystemPanel variant="stock" />,
   'more-actions': InventoryMoreActionsCard,
-  'recent-activity': InventoryRecentMovementsCard,
+  'recent-activity': () => <PurchaseSystemPanel variant="stock-recent" />,
   'reports': InventoryReportsCard,
   'records-ledgers': InventoryRecordsLedgersCard,
 }

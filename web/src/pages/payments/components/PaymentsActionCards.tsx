@@ -27,7 +27,7 @@ const ACTION_CARDS: ActionCardConfig[] = [
     borderClass: 'border-[#9b4d5a]',
     textColor: 'text-white',
     subtextColor: 'text-white/95',
-    route: '#pay-supplier',
+    route: '/purchases/payables',
   },
   {
     id: 'pay-expense',

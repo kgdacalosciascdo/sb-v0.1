@@ -53,7 +53,7 @@ const ACTION_CARDS: ActionCardConfig[] = [
     borderClass: 'border-[#f59e0b]',
     textColor: 'text-slate-900',
     subtextColor: 'text-slate-700',
-    route: '/purchases',
+    route: '/purchases/entry',
   },
   {
     id: 'payments',

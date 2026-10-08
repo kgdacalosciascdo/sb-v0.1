@@ -4,18 +4,17 @@ import cashAccountsIcon from '../../assets/icons/cash-accounts.png'
 import './cash-accounts.css'
 import { CashAccountsActionCards } from './components/CashAccountsActionCards'
 import { CashAccountsNeedsAttentionCard } from './components/CashAccountsNeedsAttentionCard'
-import { CashAccountsOverviewCard } from './components/CashAccountsOverviewCard'
+import { PurchaseSystemPanel } from '../purchases/purchase-entry/PurchaseSystemPanel'
 import { CashAccountsMoreActionsCard } from './components/CashAccountsMoreActionsCard'
-import { CashAccountsRecentActivityCard } from './components/CashAccountsRecentActivityCard'
 import { CashAccountsReportsCard } from './components/CashAccountsReportsCard'
 import { CashAccountsRecordsLedgersCard } from './components/CashAccountsRecordsLedgersCard'
 import { useCashAccountsCardOrder, type CashAccountsCardId } from '../../hooks/useCashAccountsCardOrder'
 
 const CARD_COMPONENTS: Record<CashAccountsCardId, React.ComponentType> = {
   'needs-attention': CashAccountsNeedsAttentionCard,
-  'overview': CashAccountsOverviewCard,
+  'overview': () => <PurchaseSystemPanel variant="cash" />,
   'more-actions': CashAccountsMoreActionsCard,
-  'recent-activity': CashAccountsRecentActivityCard,
+  'recent-activity': () => <PurchaseSystemPanel variant="cash-recent" />,
   'reports': CashAccountsReportsCard,
   'records-ledgers': CashAccountsRecordsLedgersCard,
 }

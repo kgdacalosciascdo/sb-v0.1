@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:receive-payment": "node scripts/receive-payment.smoke.mjs"
+    "test:receive-payment": "node scripts/receive-payment.smoke.mjs",
+    "test:purchases": "node scripts/purchase.smoke.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.40.0",
