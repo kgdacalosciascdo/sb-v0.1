@@ -67,6 +67,12 @@ let posts = 0
 let failNext = true
 let retryKey = ''
 let retryBody = ''
+let overviewGate = null
+let bootstrapGate = null
+let overviewRateLimits = 0
+let overviewHardFail = false
+let overviewReads = 0
+let overviewStarted = null
 const errors = []
 const context = await browser.newContext({
   viewport: { width: 1536, height: 980 },
@@ -81,13 +87,30 @@ await context.route('**/api/v1/demo/purchases**', async (route) => {
     .replace(/^\//, '')
   const send = (data, status = 200, meta) =>
     route.fulfill({ status, json: { data, ...(meta ? { meta } : {}) } })
-  if (path === 'bootstrap') return send(bootstrap)
+  if (path === 'bootstrap') {
+    if (bootstrapGate) await bootstrapGate
+    return send(bootstrap)
+  }
   if (path === 'suppliers' && req.method() === 'POST') {
     const added = { ...req.postDataJSON(), id: id(3), code: 'SUP-002' }
     bootstrap.suppliers.push(added)
     return send(added, 201)
   }
-  if (path === 'overview')
+  if (path === 'overview') {
+    overviewReads++
+    overviewStarted?.()
+    overviewStarted = null
+    if (overviewGate) await overviewGate
+    if (overviewHardFail)
+      return route.fulfill({ status: 503, json: { message: 'Unavailable' } })
+    if (overviewRateLimits > 0) {
+      overviewRateLimits--
+      return route.fulfill({
+        status: 429,
+        headers: { 'Retry-After': '1' },
+        json: { message: 'Too Many Requests' },
+      })
+    }
     return send({
       today: '2026-10-08',
       purchases_month_cents: record?.total_cents || 0,
@@ -126,6 +149,7 @@ await context.route('**/api/v1/demo/purchases**', async (route) => {
           ]
         : [],
     })
+  }
   if (path === 'stock')
     return send({
       items: record
@@ -330,6 +354,7 @@ try {
     .getByRole('dialog')
     .getByRole('button', { name: /123456890/ })
     .click()
+  await page.getByRole('dialog').waitFor({ state: 'hidden' })
   assert.equal(
     await page.getByLabel('Supplier invoice number').inputValue(),
     '123456890',
@@ -356,6 +381,93 @@ try {
   assert.match(await page.getByRole('dialog').innerText(), /PUR-000001/)
   assert.equal(posts, 2)
   await page.getByRole('button', { name: 'Close dialog', exact: true }).click()
+  // A delayed fetch must not imply the successfully posted credit balance is zero.
+  let releaseOverview
+  overviewGate = new Promise((resolve) => {
+    releaseOverview = resolve
+  })
+  const readsBefore = overviewReads
+  const started = new Promise(resolve => { overviewStarted = resolve })
+  await page.goto(`${url}/purchases/payables`)
+  await started
+  await page
+    .getByRole('status')
+    .filter({ hasText: 'Fetching supplier balances' })
+    .waitFor()
+  assert.equal(
+    await page
+      .getByText('No outstanding supplier balances.', { exact: true })
+      .count(),
+    0,
+  )
+  assert.equal(await page.getByText('0 purchases', { exact: true }).count(), 0)
+  assert.equal(
+    overviewReads - readsBefore,
+    1,
+    'StrictMode concurrent overview reads are deduplicated',
+  )
+  releaseOverview()
+  overviewGate = null
+  await page
+    .getByRole('cell', { name: 'ABC Trading Company', exact: true })
+    .first()
+    .waitFor()
+  assert.match(
+    await page.locator('.purchase-register-table').first().innerText(),
+    /9,544\.00/,
+  )
+  // Form-option latency must not hold back the independently loaded balances.
+  let releaseBootstrap
+  bootstrapGate = new Promise((resolve) => {
+    releaseBootstrap = resolve
+  })
+  await page.reload()
+  await page
+    .getByRole('cell', { name: 'ABC Trading Company', exact: true })
+    .first()
+    .waitFor()
+  assert.equal(
+    await page
+      .getByRole('button', { name: 'Pay Supplier', exact: true })
+      .isDisabled(),
+    true,
+  )
+  releaseBootstrap()
+  bootstrapGate = null
+  overviewRateLimits = 1
+  await page.reload()
+  await page
+    .getByRole('status')
+    .filter({ hasText: 'Fetching supplier balances' })
+    .waitFor()
+  assert.equal(
+    await page
+      .getByText('No outstanding supplier balances.', { exact: true })
+      .count(),
+    0,
+  )
+  await page
+    .getByRole('cell', { name: 'ABC Trading Company', exact: true })
+    .first()
+    .waitFor()
+  assert.equal(overviewRateLimits, 0)
+  overviewHardFail = true
+  await page.reload()
+  await page.getByRole('alert').filter({ hasText: 'unavailable' }).waitFor()
+  assert.equal(
+    await page
+      .getByText('No outstanding supplier balances.', { exact: true })
+      .count(),
+    0,
+  )
+  overviewHardFail = false
+  await page
+    .getByRole('button', { name: 'Refresh / Retry', exact: true })
+    .click()
+  await page
+    .getByRole('cell', { name: 'ABC Trading Company', exact: true })
+    .first()
+    .waitFor()
   await page.goto(`${url}/purchases/history`)
   await page
     .getByRole('button', { name: 'Details / Receipt', exact: true })
@@ -385,9 +497,16 @@ try {
     await page.getByRole('heading', { name: heading, exact: true }).waitFor()
   }
   await page.getByRole('button', { name: 'Add Supplier', exact: false }).click()
-  await page.getByLabel('Supplier name', { exact: true }).fill('Browser Supplier')
-  await page.getByRole('dialog').getByRole('button', { name: 'Add Supplier', exact: true }).click()
-  await page.getByRole('cell', { name: 'Browser Supplier', exact: true }).waitFor()
+  await page
+    .getByLabel('Supplier name', { exact: true })
+    .fill('Browser Supplier')
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Add Supplier', exact: true })
+    .click()
+  await page
+    .getByRole('cell', { name: 'Browser Supplier', exact: true })
+    .waitFor()
   assert.deepEqual(errors, [])
   console.log(
     JSON.stringify({
@@ -403,6 +522,10 @@ try {
         'history receipt',
         'supplier payment',
         'supplier creation',
+        'delayed balances show fetching, not empty',
+        'balances independent of bootstrap latency',
+        'deduplicated reads and rate-limit retry',
+        'fetch failure shows error, not empty',
         'cross-system panels',
       ],
       screenshots: output,

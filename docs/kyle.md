@@ -1,5 +1,6 @@
 ## 2026-10-08 — Purchases frontend, API, and Supabase integration
 
+- Follow-up: fixed premature empty payables/history states; added independent read loading, Refresh / Retry, GET request deduplication and bounded rate-limit/network read retries (no automatic write retries). Skipped unused history reads on Payables. Added delayed/error/429 browser coverage; live bootstrap currently returns 200 with correct Vercel CORS. See the purchase handoff follow-up; no DB/backend changes or Jhonel edits. Vercel redeployment is required.
 - Current handoff: [Purchases & Suppliers](kyle-md/purchases.md). Deployment/API contract: [Purchases API](../backend/docs/PURCHASES_API.md).
 - Implemented reference-style purchase entry, full/partial/pay-later payments, same-day checks/pending PDC, notes/proof, server drafts, printable preview/details, history, supplier directory and later settlement.
 - Posting connects supplier payables, tracked stock receipts, supplier payment/cash outflow and audit atomically. Landing purchase KPIs, Dashboard summary, Payments, Inventory, Cash Accounts and Master Registries supplier links consume the new records.

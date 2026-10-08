@@ -76,42 +76,45 @@ export function PurchasesLiveOverviewCard() {
   return (
     <LiveCard title="Overview">
       {error && <p role="alert">{error}</p>}
-      {loading && !data ? (
-        <p>Loading purchase totals…</p>
+      {loading ? (
+        <p role="status">Fetching purchase totals…</p>
       ) : (
-        <div className="space-y-3">
-          {metrics.map((m) => (
-            <div key={m.label}>
-              <div className="flex justify-between gap-2">
-                <span>{m.label}</span>
-                <strong>
-                  <Amount value={m.value} />
-                </strong>
+        !error &&
+        data && (
+          <div className="space-y-3">
+            {metrics.map((m) => (
+              <div key={m.label}>
+                <div className="flex justify-between gap-2">
+                  <span>{m.label}</span>
+                  <strong>
+                    <Amount value={m.value} />
+                  </strong>
+                </div>
+                <div className="mt-1 h-2 rounded bg-slate-100">
+                  <div
+                    className="h-full rounded transition-[width] duration-700"
+                    style={{
+                      width: `${(m.value / maximum) * 100}%`,
+                      background: m.color,
+                    }}
+                  />
+                </div>
               </div>
-              <div className="mt-1 h-2 rounded bg-slate-100">
-                <div
-                  className="h-full rounded transition-[width] duration-700"
-                  style={{
-                    width: `${(m.value / maximum) * 100}%`,
-                    background: m.color,
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-          <Link
-            className="block pt-2 font-semibold text-sky-700"
-            to="/purchases/history"
-          >
-            View Purchase History →
-          </Link>
-        </div>
+            ))}
+            <Link
+              className="block pt-2 font-semibold text-sky-700"
+              to="/purchases/history"
+            >
+              View Purchase History →
+            </Link>
+          </div>
+        )
       )}
     </LiveCard>
   )
 }
 export function PurchasesLiveAttentionCard() {
-  const { data, error } = usePurchaseOverview()
+  const { data, error, loading } = usePurchaseOverview()
   const items = [
     { label: 'Payables due today', count: data?.due_today_count || 0 },
     { label: 'Overdue supplier balances', count: data?.overdue_count || 0 },
@@ -124,30 +127,37 @@ export function PurchasesLiveAttentionCard() {
   return (
     <LiveCard title="Needs Attention">
       {error && <p role="alert">{error}</p>}
-      <div className="space-y-3">
-        {items.map((i) => (
-          <Link
-            key={i.label}
-            to="/purchases/payables"
-            className="flex items-center gap-3"
-          >
-            <span
-              className={`grid size-6 shrink-0 place-items-center rounded-full font-bold ${i.count ? 'bg-orange-100 text-orange-800' : 'bg-slate-100 text-slate-600'}`}
-            >
-              {i.count}
-            </span>
-            <span className="font-semibold">{i.label}</span>
-          </Link>
-        ))}
-        <Link to="/purchases/entry" className="block text-sky-700">
-          {data?.draft_count || 0} saved purchase drafts
-        </Link>
-      </div>
+      {loading ? (
+        <p role="status">Fetching supplier balances…</p>
+      ) : (
+        !error &&
+        data && (
+          <div className="space-y-3">
+            {items.map((i) => (
+              <Link
+                key={i.label}
+                to="/purchases/payables"
+                className="flex items-center gap-3"
+              >
+                <span
+                  className={`grid size-6 shrink-0 place-items-center rounded-full font-bold ${i.count ? 'bg-orange-100 text-orange-800' : 'bg-slate-100 text-slate-600'}`}
+                >
+                  {i.count}
+                </span>
+                <span className="font-semibold">{i.label}</span>
+              </Link>
+            ))}
+            <Link to="/purchases/entry" className="block text-sky-700">
+              {data?.draft_count || 0} saved purchase drafts
+            </Link>
+          </div>
+        )
+      )}
     </LiveCard>
   )
 }
 export function PurchasesLiveActivityCard() {
-  const { data, error } = usePurchaseOverview()
+  const { data, error, loading } = usePurchaseOverview()
   return (
     <LiveCard title="Recent Activity" expanded={false}>
       {error && <p role="alert">{error}</p>}
@@ -161,19 +171,27 @@ export function PurchasesLiveActivityCard() {
             </tr>
           </thead>
           <tbody>
-            {data?.recent.map((r) => (
-              <tr key={r.id}>
-                <td>{r.date}</td>
-                <td>
-                  <Link to="/purchases/history">
-                    {r.number}
-                    <small className="block">{r.supplier}</small>
-                  </Link>
+            {loading && (
+              <tr>
+                <td colSpan={3} role="status">
+                  Fetching purchases…
                 </td>
-                <td>{peso(r.amount_cents)}</td>
               </tr>
-            ))}
-            {!data?.recent.length && (
+            )}
+            {!loading &&
+              data?.recent.map((r) => (
+                <tr key={r.id}>
+                  <td>{r.date}</td>
+                  <td>
+                    <Link to="/purchases/history">
+                      {r.number}
+                      <small className="block">{r.supplier}</small>
+                    </Link>
+                  </td>
+                  <td>{peso(r.amount_cents)}</td>
+                </tr>
+              ))}
+            {!loading && !error && data && !data.recent.length && (
               <tr>
                 <td colSpan={3}>No purchases recorded yet.</td>
               </tr>

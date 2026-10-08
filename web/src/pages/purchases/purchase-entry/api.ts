@@ -176,30 +176,80 @@ export class PurchaseApiError extends Error {
     this.status = status
   }
 }
-export async function purchaseRequest<T>(
+// Share simultaneous reads (including React StrictMode mounts), never cache writes.
+const pendingReads = new Map<string, Promise<unknown>>()
+const delay = (milliseconds: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, milliseconds))
+
+export function purchaseRequest<T>(
   path = '',
   options?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(
-    `${purchasesEndpoint}${path ? `${path.startsWith('?') ? '' : '/'}${path}` : ''}`,
-    {
-      ...options,
-      headers: {
-        Accept: 'application/json',
-        ...(options?.body ? { 'Content-Type': 'application/json' } : {}),
-        ...options?.headers,
-      },
-    },
-  )
+  const url = `${purchasesEndpoint}${path ? `${path.startsWith('?') ? '' : '/'}${path}` : ''}`
+  const read = !options || (options.method || 'GET').toUpperCase() === 'GET'
+  if (read && !options) {
+    const existing = pendingReads.get(url)
+    if (existing) return existing as Promise<T>
+    const pending = performPurchaseRequest<T>(url, options, true).finally(() =>
+      pendingReads.delete(url),
+    )
+    pendingReads.set(url, pending)
+    return pending
+  }
+  return performPurchaseRequest<T>(url, options, read)
+}
+
+async function performPurchaseRequest<T>(
+  url: string,
+  options: RequestInit | undefined,
+  read: boolean,
+): Promise<T> {
+  let response: Response | undefined
+  for (let attempt = 0; attempt < (read ? 3 : 1); attempt++) {
+    try {
+      response = await fetch(url, {
+        ...options,
+        headers: {
+          Accept: 'application/json',
+          ...(options?.body ? { 'Content-Type': 'application/json' } : {}),
+          ...options?.headers,
+        },
+      })
+    } catch {
+      // A CORS-blocked upstream response is a network error to JavaScript.
+      if (read && attempt === 0) {
+        await delay(1500)
+        continue
+      }
+      throw new Error(
+        'Unable to reach the purchase service. It may be starting or temporarily rate-limited. Please retry shortly.',
+      )
+    }
+    if (!read || response.status !== 429 || attempt === 2) break
+    const retryAfter = response.headers.get('Retry-After')
+    const parsed = retryAfter
+      ? Number.isFinite(Number(retryAfter))
+        ? Number(retryAfter) * 1000
+        : Date.parse(retryAfter) - Date.now()
+      : 2000 * (attempt + 1)
+    if (parsed > 60000) break
+    await delay(Number.isFinite(parsed) ? Math.max(1000, parsed) : 2000)
+  }
+  if (!response)
+    throw new Error(
+      'Unable to reach the purchase service. Please retry shortly.',
+    )
   const body = await response.json().catch(() => ({}))
   if (!response.ok)
     throw new PurchaseApiError(
       Object.values(body.errors || {})
         .flat()
         .join(' ') ||
-        (response.status >= 500
-          ? 'The purchase service is unavailable. Please try again shortly.'
-          : body.message) ||
+        (response.status === 429
+          ? 'Too many requests. Please wait a moment and retry.'
+          : response.status >= 500
+            ? 'The purchase service is unavailable. Please try again shortly.'
+            : body.message) ||
         `Request failed (${response.status}).`,
       response.status,
     )
