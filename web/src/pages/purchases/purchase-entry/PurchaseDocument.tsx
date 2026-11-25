@@ -92,6 +92,7 @@ export function PurchaseDocument({
 
   return (
     <PaymentDialog
+      className="purchase-dialog purchase-document-dialog"
       title={preview ? 'Preview Purchase' : 'Purchase Details'}
       onClose={() => {
         if (!busy) onClose()
@@ -194,27 +195,29 @@ export function PurchaseDocument({
         {!!record.payments.length && (
           <>
             <h4>Supplier payments</h4>
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Method / Reference</th>
-                  <th>Paid</th>
-                </tr>
-              </thead>
-              <tbody>
-                {record.payments.map((p) => (
-                  <tr key={p.id}>
-                    <td>{p.payment_date}</td>
-                    <td>
-                      {p.method}
-                      <small>{p.reference}</small>
-                    </td>
-                    <td>{peso(p.amount_cents)}</td>
+            <div className="purchase-document-scroll purchase-payment-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Method / Reference</th>
+                    <th>Paid</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {record.payments.map((p) => (
+                    <tr key={p.id}>
+                      <td>{p.payment_date}</td>
+                      <td>
+                        {p.method}
+                        <small>{p.reference}</small>
+                      </td>
+                      <td>{peso(p.amount_cents)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
         {(record.postdated_check || record.payment.pdc) && (

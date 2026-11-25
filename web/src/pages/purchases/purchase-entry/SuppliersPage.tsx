@@ -139,6 +139,7 @@ export function SuppliersPage() {
       </section>
       {modal && (
         <PaymentDialog
+          className="purchase-dialog"
           title="Add Supplier"
           onClose={() => !busy && setModal(false)}
         >

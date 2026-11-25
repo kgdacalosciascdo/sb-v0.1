@@ -109,7 +109,7 @@ export function PurchasesPage() {
   const row3Cards = cardOrder.slice(3, 6)
 
   return (
-    <div className="w-full space-y-3.5 pb-4">
+    <div className="w-full space-y-5 pb-6">
       {/* Page Header */}
       <header className="animate-purchases-header flex flex-col gap-2 pt-0.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2.5">
@@ -145,17 +145,17 @@ export function PurchasesPage() {
 
       {/* Row 1: Primary Action Cards (Cash Purchase, Credit Purchase, Pay Supplier) */}
       <section
-        className="animate-purchases-row-1 grid grid-cols-1 gap-3.5 lg:grid-cols-[1.1fr_1.4fr_1fr]"
+        className="animate-purchases-row-1 grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)]"
         aria-label="Purchases Primary Action Cards"
       >
-        <div className="lg:col-span-2">
+        <div className="min-w-0 xl:col-span-2">
           <PurchasesActionCards />
         </div>
       </section>
 
       {/* Row 2: Repositionable Cards Slot 1, 2, 3 */}
       <section
-        className="animate-purchases-row-2 grid grid-cols-1 gap-3.5 lg:grid-cols-[1.1fr_1.4fr_1fr]"
+        className="animate-purchases-row-2 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)]"
         aria-label="Purchases Insights and Indicators"
       >
         {row2Cards.map(renderCardSlot)}
@@ -163,7 +163,7 @@ export function PurchasesPage() {
 
       {/* Row 3: Repositionable Cards Slot 4, 5, 6 */}
       <section
-        className="animate-purchases-row-3 grid grid-cols-1 gap-3.5 lg:grid-cols-[1.1fr_1.4fr_1fr]"
+        className="animate-purchases-row-3 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)]"
         aria-label="Purchases Activities and Ledgers"
       >
         {row3Cards.map(renderCardSlot)}
