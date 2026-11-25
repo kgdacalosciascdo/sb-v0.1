@@ -1,5 +1,9 @@
 /* Purchases & Payables Entrance and Transition Styles */
 
+.purchases-card-draggable {
+  min-width: 0;
+}
+
 @keyframes purchasesFadeUp {
   from {
     opacity: 0;

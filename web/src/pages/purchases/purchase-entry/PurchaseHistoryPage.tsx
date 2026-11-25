@@ -494,6 +494,7 @@ export function PurchaseHistoryPage() {
       )}
       {payment && (
         <PaymentDialog
+          className="purchase-dialog"
           title={`Pay Supplier — ${payment.purchase_number}`}
           onClose={() => !busy && setPayment(null)}
         >

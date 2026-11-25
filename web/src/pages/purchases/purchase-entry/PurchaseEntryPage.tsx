@@ -1205,7 +1205,7 @@ export function PurchaseEntryPage() {
       {removeIndex !== null && (
         <PaymentDialog
           title="Remove Item"
-          className="pe-dialog"
+          className="purchase-dialog pe-dialog"
           onClose={() => setRemoveIndex(null)}
         >
           <p className="pe-remove-message">
@@ -1230,7 +1230,7 @@ export function PurchaseEntryPage() {
       {receivingHelp && (
         <PaymentDialog
           title="Receiving purchased goods"
-          className="pe-dialog"
+          className="purchase-dialog pe-dialog"
           onClose={() => setReceivingHelp(false)}
         >
           <dl className="pe-receiving-help">
@@ -1261,7 +1261,11 @@ export function PurchaseEntryPage() {
         />
       )}
       {modal === 'supplier' && (
-        <PaymentDialog title="Add Supplier" onClose={() => setModal(null)}>
+        <PaymentDialog
+          title="Add Supplier"
+          className="purchase-dialog"
+          onClose={() => setModal(null)}
+        >
           <form
             className="rp-customer-form"
             onSubmit={(e) => {
@@ -1305,6 +1309,7 @@ export function PurchaseEntryPage() {
       {modal === 'drafts' && (
         <PaymentDialog
           title="Load Purchase Draft"
+          className="purchase-dialog"
           onClose={() => setModal(null)}
         >
           <div className="rp-draft-list">

@@ -59,7 +59,7 @@ export function PurchasesActionCards() {
   const navigate = useNavigate()
 
   return (
-    <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {ACTION_CARDS.map((card) => (
         <div
           key={card.id}
@@ -79,7 +79,7 @@ export function PurchasesActionCards() {
             <h2 className={`mt-3 text-[16px] sm:text-[17px] font-bold tracking-tight ${card.textColor}`}>
               {card.title}
             </h2>
-            <p className={`mt-1.5 line-clamp-2 min-h-[34px] text-[11.5px] leading-relaxed ${card.subtextColor}`}>
+            <p className={`mt-2 text-sm leading-relaxed ${card.subtextColor}`}>
               {card.description}
             </p>
           </div>
@@ -93,7 +93,7 @@ export function PurchasesActionCards() {
                   navigate(card.route)
                 }
               }}
-              className="w-full rounded-lg border border-slate-300/80 bg-white px-3 py-2 text-center text-[12.5px] font-bold text-slate-800 shadow-2xs transition hover:bg-slate-50 hover:text-slate-950 active:scale-95 cursor-pointer"
+              className="w-full rounded-lg border border-slate-300/80 bg-white px-3 py-2.5 text-center text-sm font-bold text-slate-800 shadow-2xs transition hover:bg-slate-50 hover:text-slate-950 active:scale-95 cursor-pointer"
             >
               {card.buttonText}
             </button>

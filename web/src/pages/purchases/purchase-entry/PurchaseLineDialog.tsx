@@ -47,7 +47,7 @@ export function PurchaseLineDialog({
     <PaymentDialog
       title="Line Item Details"
       onClose={onClose}
-      className="pe-dialog"
+      className="purchase-dialog pe-dialog pe-line-dialog"
     >
       <form
         className="pe-line-form"

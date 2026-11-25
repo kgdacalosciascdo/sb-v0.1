@@ -319,6 +319,21 @@ try {
   for (const product of products) {
     await page.getByRole('button', { name: 'Add Item', exact: true }).click()
     const dialog = page.getByRole('dialog')
+    if (product === products[0]) {
+      const desktopViewport = page.viewportSize()
+      const itemField = dialog.getByLabel('Item ID')
+      for (const viewport of [desktopViewport, { width: 340, height: 667 }]) {
+        await page.setViewportSize(viewport)
+        const frame = await dialog.boundingBox()
+        const field = await itemField.boundingBox()
+        assert.ok(field.x - frame.x >= 16, 'Fields need a left gutter')
+        assert.ok(frame.x + frame.width - field.x - field.width >= 16, 'Fields need a right gutter')
+        assert.ok(field.height >= 42, 'Item controls need a readable height')
+        assert.ok(frame.x >= 0 && frame.x + frame.width <= viewport.width, 'Dialog must fit the viewport')
+        await page.screenshot({ path: join(output, `line-item-${viewport.width}.png`) })
+      }
+      await page.setViewportSize(desktopViewport)
+    }
     await dialog.getByLabel('Item ID').selectOption(product.id)
     if (product.code === 'PRD-2003') {
       await dialog.getByLabel('Quantity', { exact: true }).fill('2')
@@ -415,6 +430,8 @@ try {
   await page
     .getByRole('button', { name: 'Record Delivery', exact: true })
     .click()
+  await page.getByRole('heading', { name: 'Record Delivery' }).scrollIntoViewIfNeeded()
+  await page.screenshot({ path: join(output, 'delivery-mobile.png') })
   await page
     .getByLabel('Printer - LaserJet Pro (1 outstanding)', { exact: true })
     .fill('1')
@@ -515,12 +532,19 @@ try {
     .first()
     .waitFor()
   await page.goto(`${url}/purchases/history`)
+  await page.getByRole('button', { name: 'Details / Receipt', exact: true }).waitFor()
+  assert.ok(
+    await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+    'Purchase history must keep its horizontal scrolling inside the table on mobile',
+  )
   await page
     .getByRole('button', { name: 'Details / Receipt', exact: true })
     .click()
   assert.match(await page.getByRole('dialog').innerText(), /PUR-000001/)
   await page.getByRole('button', { name: 'Close dialog', exact: true }).click()
   await page.getByRole('button', { name: 'Pay Supplier', exact: true }).click()
+  await page.getByLabel('Supplier payment reference').waitFor()
+  await page.screenshot({ path: join(output, 'supplier-payment-mobile.png') })
   await page.getByLabel('Supplier payment reference').fill('SETTLE-123')
   await page
     .getByRole('button', { name: 'Record Payment', exact: true })
@@ -543,6 +567,8 @@ try {
     await page.getByRole('heading', { name: heading, exact: true }).waitFor()
   }
   await page.getByRole('button', { name: 'Add Supplier', exact: false }).click()
+  await page.getByLabel('Supplier name', { exact: true }).waitFor()
+  await page.screenshot({ path: join(output, 'add-supplier.png') })
   await page
     .getByLabel('Supplier name', { exact: true })
     .fill('Browser Supplier')
