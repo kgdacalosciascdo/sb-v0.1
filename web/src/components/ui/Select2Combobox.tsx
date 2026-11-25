@@ -8,7 +8,7 @@ export interface Select2Option {
   badge?: string
 }
 
-interface Select2ComboboxProps {
+export interface Select2ComboboxProps {
   id?: string
   value: string
   options: (string | Select2Option)[]
@@ -17,9 +17,13 @@ interface Select2ComboboxProps {
   disabled?: boolean
   clearable?: boolean
   className?: string
+  triggerClassName?: string
   searchPlaceholder?: string
   required?: boolean
+  error?: boolean
 }
+
+export type Select2Props = Select2ComboboxProps
 
 export function Select2Combobox({
   id,
@@ -30,7 +34,9 @@ export function Select2Combobox({
   disabled = false,
   clearable = false,
   className = '',
+  triggerClassName = '',
   searchPlaceholder = 'Search...',
+  error = false,
 }: Select2ComboboxProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -97,12 +103,15 @@ export function Select2Combobox({
             setSearchTerm('')
           }
         }}
-        className={`w-full flex items-center justify-between rounded-md border-[1.5px] bg-white px-3 py-2 text-xs transition-all text-left outline-none ${disabled
-          ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed'
-          : isOpen
-            ? 'border-[#0288d1] ring-2 ring-[#0288d1]/20'
-            : 'border-[#63c4ed] hover:border-[#38b4e7] cursor-pointer'
-          }`}
+        className={`w-full flex items-center justify-between rounded-md border-[1.5px] bg-white px-3 py-2 text-xs transition-all text-left outline-none ${
+          disabled
+            ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed'
+            : error
+              ? 'border-rose-500 bg-rose-50/20 ring-1 ring-rose-500'
+              : isOpen
+                ? 'border-[#0288d1] ring-2 ring-[#0288d1]/20'
+                : 'border-[#63c4ed] hover:border-[#38b4e7] cursor-pointer'
+        } ${triggerClassName}`}
       >
         <span className={`truncate font-medium ${selectedOption ? 'text-slate-800' : 'text-slate-400'}`}>
           {selectedOption ? selectedOption.label : placeholder}
@@ -205,3 +214,7 @@ export function Select2Combobox({
     </div>
   )
 }
+
+export const Select2 = Select2Combobox
+export default Select2Combobox
+

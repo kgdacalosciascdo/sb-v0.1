@@ -98,9 +98,8 @@ export function CollectionsPage() {
         onMouseLeave={() => {
           if (!draggedId) setCanDrag(null)
         }}
-        className={`collections-card-draggable h-full ${
-          isDragging ? 'is-dragging' : ''
-        } ${isDragOver ? 'is-drag-over' : ''}`}
+        className={`collections-card-draggable h-full ${isDragging ? 'is-dragging' : ''
+          } ${isDragOver ? 'is-drag-over' : ''}`}
       >
         <Component />
       </div>

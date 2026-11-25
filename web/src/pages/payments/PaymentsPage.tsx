@@ -149,10 +149,12 @@ export function PaymentsPage() {
 
       {/* Row 1: Primary Action Cards (Pay Supplier, Pay Expense, Other Payments) */}
       <section
-        className="animate-payments-row-1"
+        className="animate-payments-row-1 grid grid-cols-1 gap-3.5 lg:grid-cols-[1.1fr_1.4fr_1fr]"
         aria-label="Payments Primary Action Cards"
       >
-        <PaymentsActionCards />
+        <div className="lg:col-span-2">
+          <PaymentsActionCards />
+        </div>
       </section>
 
       {/* Row 2: Repositionable Cards Slot 1, 2, 3 */}
