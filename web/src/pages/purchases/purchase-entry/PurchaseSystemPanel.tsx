@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { peso, purchaseRequest } from './api'
 import { usePurchaseOverview } from './usePurchaseOverview'
-import './purchase-entry.css'
 
 interface Stock {
   items: {

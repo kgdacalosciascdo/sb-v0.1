@@ -1,7 +1,6 @@
 import { useState, type DragEvent } from 'react'
 import { RotateCcw } from 'lucide-react'
 import penIcon from '../../assets/icons/pen.png'
-import { PurchaseSystemPanel } from '../purchases/purchase-entry/PurchaseSystemPanel'
 import './payments.css'
 import { PaymentsActionCards } from './components/PaymentsActionCards'
 import { PaymentsNeedsAttentionCard } from './components/PaymentsNeedsAttentionCard'
@@ -115,13 +114,15 @@ export function PaymentsPage() {
     <div className="w-full space-y-3.5 pb-4">
       {/* Page Header */}
       <header className="animate-payments-header flex flex-col gap-2 pt-0.5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2.5">
-          <img
-            src={penIcon}
-            alt=""
-            aria-hidden="true"
-            className="size-8 shrink-0 object-contain sm:size-9"
-          />
+        <div className="flex items-center gap-3">
+          <div className="flex size-11 shrink-0 items-center justify-center sm:size-12">
+            <img
+              src={penIcon}
+              alt=""
+              aria-hidden="true"
+              className="size-11 shrink-0 object-contain drop-shadow-xs sm:size-12 scale-[1.6]"
+            />
+          </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
               Payments &amp; Disbursements
@@ -146,16 +147,12 @@ export function PaymentsPage() {
         )}
       </header>
 
-      <PurchaseSystemPanel variant="payables" />
-
       {/* Row 1: Primary Action Cards (Pay Supplier, Pay Expense, Other Payments) */}
       <section
-        className="animate-payments-row-1 grid grid-cols-1 gap-3.5 lg:grid-cols-[1.1fr_1.4fr_1fr]"
+        className="animate-payments-row-1"
         aria-label="Payments Primary Action Cards"
       >
-        <div className="lg:col-span-2">
-          <PaymentsActionCards />
-        </div>
+        <PaymentsActionCards />
       </section>
 
       {/* Row 2: Repositionable Cards Slot 1, 2, 3 */}

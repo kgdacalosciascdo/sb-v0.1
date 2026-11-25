@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { intendedUses, peso, purchaseRequest, type IntendedUse } from './api'
-import './purchase-entry.css'
 
 interface PurchaseExpense {
   id: string

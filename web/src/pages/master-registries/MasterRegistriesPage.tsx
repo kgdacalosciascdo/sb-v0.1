@@ -128,9 +128,9 @@ export function MasterRegistriesPage() {
   const navigate = useNavigate()
   return (
     <div className="w-full space-y-3.5 pb-4">
-      <header className="animate-master-registries-header flex items-center gap-2.5 pt-0.5">
-        <span className="grid size-8 shrink-0 place-items-center rounded-md bg-violet-100 text-violet-600 sm:size-9">
-          <LayoutGrid aria-hidden="true" className="size-5 sm:size-6" />
+      <header className="animate-master-registries-header flex items-center gap-3 pt-0.5">
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-violet-100 text-violet-600 sm:size-12">
+          <LayoutGrid aria-hidden="true" className="size-6 sm:size-7" />
         </span>
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">Master Registries</h1>

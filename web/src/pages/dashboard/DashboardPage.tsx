@@ -1,7 +1,6 @@
 import { useState, type DragEvent } from 'react'
 import { RotateCcw } from 'lucide-react'
 import dashboardIcon from '../../assets/icons/dashboard.png'
-import { PurchaseSystemPanel } from '../purchases/purchase-entry/PurchaseSystemPanel'
 import './dashboard.css'
 import { DashboardActionCards } from './components/DashboardActionCards'
 import { NeedsAttentionCard } from './components/NeedsAttentionCard'
@@ -115,13 +114,15 @@ export function DashboardPage() {
     <div className="w-full space-y-3.5 pb-4">
       {/* Page Header */}
       <header className="animate-dashboard-header flex flex-col gap-2 pt-0.5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2.5">
-          <img
-            src={dashboardIcon}
-            alt=""
-            aria-hidden="true"
-            className="size-8 shrink-0 object-contain sm:size-9"
-          />
+        <div className="flex items-center gap-3">
+          <div className="flex size-11 shrink-0 items-center justify-center sm:size-12">
+            <img
+              src={dashboardIcon}
+              alt=""
+              aria-hidden="true"
+              className="size-11 shrink-0 object-contain drop-shadow-xs sm:size-12 scale-[1.6]"
+            />
+          </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
               Dashboard
@@ -145,8 +146,6 @@ export function DashboardPage() {
           </button>
         )}
       </header>
-
-      <PurchaseSystemPanel />
 
       {/* Row 1: Primary Action Cards (Sales, Collections, Purchases, Payments, Inventory) */}
       <section
