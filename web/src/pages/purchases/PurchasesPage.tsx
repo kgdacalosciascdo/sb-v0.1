@@ -147,10 +147,12 @@ export function PurchasesPage() {
 
       {/* Row 1: Primary Action Cards (Cash Purchase, Credit Purchase, Pay Supplier) */}
       <section
-        className="animate-purchases-row-1"
+        className="animate-purchases-row-1 grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)]"
         aria-label="Purchases Primary Action Cards"
       >
-        <PurchasesActionCards />
+        <div className="min-w-0 xl:col-span-2">
+          <PurchasesActionCards />
+        </div>
       </section>
 
       {/* Row 2: Repositionable Cards Slot 1, 2, 3 */}
