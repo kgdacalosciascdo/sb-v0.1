@@ -7,6 +7,7 @@ import {
   peso,
   PurchaseApiError,
   purchaseRequest,
+  receivingLabels,
   today,
   type Overview,
   type PurchaseBootstrap,
@@ -21,6 +22,9 @@ export function PurchaseHistoryPage() {
   const overdueOnly =
     new URLSearchParams(location.search).get('overdue') === '1'
   const [page, setPage] = useState(1)
+  const awaitingDelivery =
+    !isPayables &&
+    new URLSearchParams(location.search).get('awaiting_delivery') === '1'
   const [supplier, setSupplier] = useState(
     () => new URLSearchParams(location.search).get('supplier') || '',
   )
@@ -38,7 +42,7 @@ export function PurchaseHistoryPage() {
   const [payment, setPayment] = useState<PurchaseRecord | null>(null)
   const [busy, setBusy] = useState(false)
   const [refresh, setRefresh] = useState(0)
-  const requestKey = `${page}:${supplier}:${refresh}`
+  const requestKey = `${page}:${supplier}:${refresh}:${awaitingDelivery}`
   const loading = isPayables
     ? overviewVersion !== refresh
     : historyKey !== requestKey
@@ -55,7 +59,7 @@ export function PurchaseHistoryPage() {
     if (isPayables) return
     let active = true
     purchaseRequest<{ data: PurchaseRow[]; meta: typeof meta }>(
-      `?page=${page}${supplier ? `&supplier_id=${encodeURIComponent(supplier)}` : ''}`,
+      `?page=${page}${supplier ? `&supplier_id=${encodeURIComponent(supplier)}` : ''}${awaitingDelivery ? '&awaiting_delivery=1' : ''}`,
     )
       .then((history) => {
         if (!active) return
@@ -72,7 +76,7 @@ export function PurchaseHistoryPage() {
     return () => {
       active = false
     }
-  }, [page, supplier, refresh, requestKey, isPayables])
+  }, [page, supplier, refresh, requestKey, isPayables, awaitingDelivery])
   useEffect(() => {
     let active = true
     purchaseRequest<{ data: Overview }>('overview')
@@ -210,6 +214,18 @@ export function PurchaseHistoryPage() {
         <Link to={isPayables ? '/purchases/history' : '/purchases/payables'}>
           {isPayables ? 'All Purchases' : 'Supplier Payables'}
         </Link>
+        {!isPayables && (
+          <Link
+            onClick={() => setPage(1)}
+            to={
+              awaitingDelivery
+                ? '/purchases/history'
+                : '/purchases/history?awaiting_delivery=1'
+            }
+          >
+            {awaitingDelivery ? 'All Deliveries' : 'Awaiting Delivery'}
+          </Link>
+        )}
         <button
           disabled={loading}
           onClick={() => {
@@ -363,6 +379,7 @@ export function PurchaseHistoryPage() {
                     <th>Total</th>
                     <th>Paid</th>
                     <th>Due</th>
+                    <th>Receiving</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -378,6 +395,7 @@ export function PurchaseHistoryPage() {
                       <td>{peso(r.total_cents)}</td>
                       <td>{peso(r.paid_cents)}</td>
                       <td>{peso(r.due_cents)}</td>
+                      <td>{receivingLabels[r.receiving_mode || 'all']}</td>
                       <td>
                         <button disabled={busy} onClick={() => void open(r.id)}>
                           Details / Receipt
@@ -395,7 +413,11 @@ export function PurchaseHistoryPage() {
                   ))}
                   {!visible.length && (
                     <tr>
-                      <td colSpan={7}>No purchases found.</td>
+                      <td colSpan={8}>
+                        {awaitingDelivery
+                          ? 'No purchases awaiting delivery.'
+                          : 'No purchases found.'}
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -460,7 +482,15 @@ export function PurchaseHistoryPage() {
         </section>
       )}
       {record && (
-        <PurchaseDocument record={record} onClose={() => setRecord(null)} />
+        <PurchaseDocument
+          key={record.id}
+          record={record}
+          onClose={() => setRecord(null)}
+          onReceived={(updated) => {
+            setRecord(updated)
+            setRefresh((value) => value + 1)
+          }}
+        />
       )}
       {payment && (
         <PaymentDialog

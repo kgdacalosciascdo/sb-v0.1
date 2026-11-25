@@ -13,6 +13,7 @@ Route::middleware('demo.sales')->prefix('v1/demo')->group(function (): void {
         Route::get('bootstrap', [PurchaseController::class, 'bootstrap']);
         Route::get('overview', [PurchaseController::class, 'overview']);
         Route::get('stock', [PurchaseController::class, 'stock']);
+        Route::get('expenses', [PurchaseController::class, 'expenses']);
         Route::get('cash', [PurchaseController::class, 'cash']);
         Route::get('drafts', [PurchaseController::class, 'drafts']);
         Route::post('drafts', [PurchaseController::class, 'saveDraft'])->name('purchases.drafts.store');
@@ -22,6 +23,7 @@ Route::middleware('demo.sales')->prefix('v1/demo')->group(function (): void {
         Route::post('/', [PurchaseController::class, 'store']);
         Route::get('{purchase}', [PurchaseController::class, 'show'])->whereUuid('purchase');
         Route::post('{purchase}/payments', [PurchaseController::class, 'payment'])->whereUuid('purchase');
+        Route::post('{purchase}/receiving', [PurchaseController::class, 'receive'])->whereUuid('purchase');
         Route::post('{purchase}/clear-check', [PurchaseController::class, 'clearCheck'])->whereUuid('purchase');
         Route::get('{purchase}/attachments/{index}', [PurchaseController::class, 'attachment'])->whereUuid('purchase')->whereNumber('index');
     });

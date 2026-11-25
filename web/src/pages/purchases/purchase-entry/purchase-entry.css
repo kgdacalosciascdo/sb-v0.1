@@ -4,6 +4,146 @@
   line-height: 1.45;
   animation: purchase-enter 0.3s ease-out both;
 }
+.pe-receiving-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
+  gap: 13px;
+}
+.pe-receiving label {
+  display: inline;
+  margin-right: 4px;
+}
+.pe-receiving select {
+  margin-top: 5px;
+}
+.pe-item-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+}
+table.pe-items.pe-items-expanded {
+  min-width: 800px;
+  table-layout: auto;
+}
+.pe-items.pe-items-expanded th:nth-child(n) {
+  width: auto;
+  white-space: nowrap;
+}
+.pe-items.pe-items-expanded th:nth-child(2) {
+  width: 26%;
+  min-width: 170px;
+}
+.pe-items.pe-items-expanded th:first-child {
+  width: 25px;
+}
+.pe-items.pe-items-expanded th:last-child {
+  width: 32px;
+}
+.pe-items.pe-items-expanded tbody td:nth-last-child(2):not(.pe-line-amount) {
+  text-align: center;
+}
+.pe-items td.pe-line-amount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pe-items tbody td {
+  padding-block: 8px;
+}
+.purchase-entry .pe-transaction-preview {
+  justify-content: space-between;
+  background: #d6f0fa;
+  border-color: #63a8c3;
+}
+.pe-menu-dismiss {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  background: transparent;
+  border: 0;
+  cursor: default;
+}
+.pe-menu-dismiss:hover {
+  background: transparent;
+}
+.pe-item-menu {
+  position: fixed;
+  z-index: 50;
+  width: 205px;
+  padding: 4px;
+  background: white;
+  border: 1px solid #6485b1;
+  box-shadow: 0 6px 14px #0c376129;
+}
+.pe-item-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: white;
+  border: 0;
+  padding: 6px 8px;
+  color: #0c3761;
+  font-size: 13px;
+}
+.pe-item-menu button:is(:hover, :focus-visible) {
+  background: #d6f0fa;
+}
+.collection-dialog.pe-dialog {
+  width: min(460px, calc(100% - 24px));
+  background: #d6f0fa;
+  color: #0c3761;
+  border-color: #63a8c3;
+}
+.pe-line-form {
+  display: grid;
+  gap: 12px;
+}
+.pe-line-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.pe-line-form label {
+  display: grid;
+  gap: 5px;
+  color: #405d78;
+  font-size: 13px;
+}
+.pe-line-form :is(input, select) {
+  width: 100%;
+  min-width: 0;
+  padding: 8px;
+  background: white;
+  border: 1px solid #6485b1;
+  border-radius: 5px;
+  color: #173c5c;
+}
+.pe-line-form :is(input[readonly], :disabled) {
+  background: #e5f4fb;
+}
+.pe-remove-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pe-remove-message svg {
+  color: #a25d00;
+}
+.pe-remove-link {
+  justify-self: start;
+  text-decoration: underline;
+}
+.pe-receiving-help dt {
+  margin-top: 12px;
+  font-weight: 700;
+}
+@media (max-width: 650px) {
+  .pe-receiving-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 .pe-breadcrumb {
   display: flex;
   gap: 6px;

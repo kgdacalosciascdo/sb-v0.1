@@ -6,10 +6,12 @@ export function PaymentDialog({
   title,
   onClose,
   children,
+  className = '',
 }: {
   title: string
   onClose: () => void
   children: ReactNode
+  className?: string
 }) {
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => {
@@ -20,9 +22,12 @@ export function PaymentDialog({
   return createPortal(
     <dialog
       ref={ref}
-      className="collection-dialog"
+      className={`collection-dialog ${className}`}
       aria-label={title}
-      onCancel={onClose}
+      onCancel={(event) => {
+        event.preventDefault()
+        onClose()
+      }}
     >
       <div className="collection-dialog-heading">
         <h2>{title}</h2>

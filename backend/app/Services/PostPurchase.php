@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\AuditLog;
 use App\Models\Company;
 use App\Models\DocumentSequence;
-use App\Models\InventoryMovement;
 use App\Models\PayableOpenItem;
 use App\Models\ProductService;
 use App\Models\Purchase;
@@ -20,6 +19,8 @@ use Illuminate\Validation\ValidationException;
 
 class PostPurchase
 {
+    public function __construct(private ReceivePurchasedItems $receiving) {}
+
     public function totals(Company $company, array $items): array
     {
         $grossTotal = $discountTotal = $taxTotal = 0;
@@ -42,6 +43,7 @@ class PostPurchase
             $discountTotal += $discount;
             $taxTotal += $vat;
             $lines[] = ['product_id' => $product->id, 'code' => $product->code, 'name' => $product->name, 'unit' => $product->unit_name, 'quantity' => $item['quantity'], 'unit_cost' => $item['unit_cost'], 'unit_cost_cents' => $cost, 'discount_percent' => $item['discount_percent'], 'tax_id' => $tax?->id, 'tax_name' => $tax?->name ?? 'No tax', 'tax_rate' => $tax?->rate_basis_points ?? 0, 'gross_cents' => $gross, 'discount_cents' => $discount, 'net_cents' => $net, 'tax_cents' => $vat, 'track_inventory' => $product->track_inventory && $product->type === 'product'];
+            $lines[$i]['intended_use'] = $item['intended_use'] ?? 'sale';
         }
         $total = $grossTotal - $discountTotal + $taxTotal;
         $this->ensure($total <= 9999999999, 'items', 'The purchase total exceeds the supported amount.');
@@ -67,6 +69,21 @@ class PostPurchase
             $invoiceKey = mb_strtoupper(trim($data['invoice_number']));
             $this->ensure(! Purchase::query()->where('company_id', $company->id)->where('supplier_id', $supplier->id)->where('invoice_key', $invoiceKey)->exists(), 'invoice_number', 'This supplier invoice has already been recorded.');
             $totals = $this->totals($company, $data['items']);
+            $receivingMode = $data['receiving_mode'] ?? 'all';
+            $received = [];
+            $orderedTotal = 0;
+            foreach ($totals['lines'] as $i => $line) {
+                $ordered = Money::quantity($line['quantity']);
+                $orderedTotal += $ordered;
+                $received[$i] = match ($receivingMode) {
+                    'all' => $ordered,
+                    'none' => 0,
+                    default => Money::quantity($data['items'][$i]['received_quantity'] ?? '0'),
+                };
+                $this->ensure($received[$i] <= $ordered, "items.$i.received_quantity", 'Quantity received cannot exceed quantity purchased.');
+            }
+            $receivedTotal = array_sum($received);
+            $this->ensure($receivingMode !== 'partial' || ($receivedTotal > 0 && $receivedTotal < $orderedTotal), 'receiving_mode', 'Partially Received requires some quantity received and some still outstanding.');
             $total = $totals['total_cents'];
             $this->ensure($total > 0, 'items', 'The purchase total must be greater than zero.');
             $paid = Money::cents($data['amount_paid']);
@@ -86,8 +103,9 @@ class PostPurchase
             $purchase = Purchase::query()->create(['company_id' => $company->id, 'supplier_id' => $supplier->id, 'purchase_number' => $number, 'purchase_date' => $data['purchase_date'], 'supplier_invoice_number' => $data['invoice_number'], 'invoice_key' => $invoiceKey, 'payment_status' => $mode, 'due_date' => $due > 0 ? $data['due_date'] : null, 'total_cents' => $total, 'paid_cents' => $paid, 'due_cents' => $due, 'idempotency_key' => $key, 'request_hash' => $hash, 'snapshot' => ['company' => ['name' => $company->name, 'currency' => $company->currency_code], 'supplier' => ['id' => $supplier->id, 'name' => $supplier->name, 'code' => $supplier->code], 'totals' => $totals, 'payment' => ['mode' => $mode, 'method' => $paid > 0 ? $data['payment_method'] : null, 'account_id' => $paid > 0 ? $data['cash_account_id'] : null, 'reference' => $data['reference'] ?? '', 'check_date' => $data['payment_method'] === 'Check' && $paid > 0 ? $data['purchase_date'] : null, 'pdc' => $pdc], 'notes' => $data['notes'] ?? '', 'attachments' => $data['attachments']]]);
             foreach ($totals['lines'] as $i => $line) {
                 $savedLine = PurchaseLine::query()->create(['purchase_id' => $purchase->id, 'product_service_id' => $line['product_id'], 'line_number' => $i + 1, 'quantity' => $line['quantity'], 'unit_cost_cents' => $line['unit_cost_cents'], 'gross_cents' => $line['gross_cents'], 'discount_cents' => $line['discount_cents'], 'net_cents' => $line['net_cents'], 'tax_cents' => $line['tax_cents'], 'snapshot' => $line]);
-                if ($line['track_inventory']) {
-                    InventoryMovement::query()->create(['company_id' => $company->id, 'product_service_id' => $line['product_id'], 'purchase_line_id' => $savedLine->id, 'quantity' => $line['quantity'], 'cost_cents' => $line['net_cents'], 'movement_date' => $data['purchase_date'], 'direction' => 'in']);
+                $savedLine->update(['received_quantity' => '0']);
+                if ($received[$i] > 0) {
+                    $this->receiving->apply($company, $savedLine, $received[$i], $data['purchase_date']);
                 }
             }
             PayableOpenItem::query()->create(['company_id' => $company->id, 'supplier_id' => $supplier->id, 'purchase_id' => $purchase->id, 'due_date' => $due > 0 ? $data['due_date'] : $data['purchase_date'], 'original_cents' => $total, 'outstanding_cents' => $total, 'status' => 'open']);
@@ -104,9 +122,23 @@ class PostPurchase
         }, 3);
     }
 
-    public function serialize(Purchase $purchase): array
+    public function serialize(Purchase $purchase, bool $includeReceiving = true): array
     {
         $snapshot = $purchase->snapshot;
+        if ($includeReceiving) {
+            $lines = PurchaseLine::query()->where('purchase_id', $purchase->id)->orderBy('line_number')->get();
+            $anyReceived = false;
+            $anyOutstanding = false;
+            foreach ($lines as $line) {
+                $received = $line->received_quantity ?? $line->quantity;
+                $anyReceived = $anyReceived || Money::quantity($received) > 0;
+                $anyOutstanding = $anyOutstanding || Money::quantity($received) < Money::quantity($line->quantity);
+                $i = $line->line_number - 1;
+                $snapshot['totals']['lines'][$i]['line_id'] = $line->id;
+                $snapshot['totals']['lines'][$i]['received_quantity'] = $received;
+            }
+            $snapshot['receiving_mode'] = $anyOutstanding ? ($anyReceived ? 'partial' : 'none') : 'all';
+        }
         $snapshot['attachments'] = array_map(fn ($a, $i): array => ['name' => $a['name'], 'mime' => $a['mime'], 'index' => $i], $snapshot['attachments'], array_keys($snapshot['attachments']));
         $outstanding = PayableOpenItem::query()->where('purchase_id', $purchase->id)->value('outstanding_cents') ?? $purchase->due_cents;
         $check = PurchasePostdatedCheck::query()->where('purchase_id', $purchase->id)->first();

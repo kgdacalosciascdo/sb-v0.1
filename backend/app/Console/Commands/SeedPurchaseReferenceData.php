@@ -26,7 +26,13 @@ class SeedPurchaseReferenceData extends Command
         foreach (['PRD-1001' => '8500.00', 'PRD-2003' => '2500.00', 'PRD-2004' => '3000.00', 'PRD-3001' => '300.00'] as $code => $cost) {
             ProductService::query()->where('company_id', $company->id)->where('code', $code)->whereNull('default_purchase_cost')->update(['default_purchase_cost' => $cost]);
         }
-        foreach ([['CASH-VAULT', 'Cash in Vault [CV-001]', ['Cash']], ['CREDIT-CARD', 'Business Credit Card', ['Credit Card']]] as [$code, $name, $methods]) {
+        foreach ([
+            ['CASH-BOX', 'Cash in Box [CB-001]', ['Cash']],
+            ['CASH-VAULT', 'Cash in Vault [CV-001]', ['Cash']],
+            ['PETTY-CASH', 'Petty Cash Fund', ['Cash']],
+            ['CASH-DRAWER', 'Cash Drawer [CD-002]', ['Cash']],
+            ['CREDIT-CARD', 'Business Credit Card', ['Credit Card']],
+        ] as [$code, $name, $methods]) {
             CashAccount::query()->firstOrCreate(['company_id' => $company->id, 'code' => $code], ['name' => $name, 'payment_methods' => $methods, 'is_active' => true]);
         }
         $this->call('simplebiz:seed-collection-accounts', ['--company' => $company->id]);

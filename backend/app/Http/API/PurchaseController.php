@@ -14,6 +14,7 @@ use App\Models\Supplier;
 use App\Models\SupplierPayment;
 use App\Models\TaxCode;
 use App\Services\PostPurchase;
+use App\Services\ReceivePurchasedItems;
 use App\Services\RecordSupplierPayment;
 use App\Support\Money;
 use Carbon\CarbonImmutable;
@@ -49,22 +50,61 @@ class PurchaseController extends Controller
 
     public function index(Request $request, PostPurchase $service): JsonResponse
     {
-        $query = Purchase::query()->where('company_id', $request->attributes->get('company')->id)->latest();
+        $outstanding = fn ($lines) => $lines->whereColumn('received_quantity', '<', 'quantity');
+        $query = Purchase::query()->where('company_id', $request->attributes->get('company')->id)
+            ->withExists([
+                'lines as has_outstanding' => $outstanding,
+                'lines as has_received' => fn ($lines) => $lines->where('received_quantity', '>', 0),
+            ])->latest();
+        if ($request->boolean('awaiting_delivery')) {
+            $query->whereHas('lines', $outstanding);
+        }
         if ($supplier = $request->query('supplier_id')) {
             $query->where('supplier_id', $supplier);
         }
         $rows = $query->paginate(25);
 
         return response()->json(['data' => $rows->getCollection()->map(function ($p) use ($service): array {
-            $record = $service->serialize($p);
+            $record = $service->serialize($p, false);
+            $record['receiving_mode'] = $p->has_outstanding ? ($p->has_received ? 'partial' : 'none') : 'all';
 
-            return collect($record)->only(['id', 'purchase_number', 'purchase_date', 'supplier', 'invoice_number', 'total_cents', 'paid_cents', 'due_cents', 'due_date', 'postdated_check'])->all();
+            return collect($record)->only(['id', 'purchase_number', 'purchase_date', 'supplier', 'invoice_number', 'total_cents', 'paid_cents', 'due_cents', 'due_date', 'postdated_check', 'receiving_mode'])->all();
         }), 'meta' => ['page' => $rows->currentPage(), 'last_page' => $rows->lastPage(), 'total' => $rows->total()]]);
     }
 
     public function show(Request $request, string $purchase, PostPurchase $service): JsonResponse
     {
         return response()->json(['data' => $service->serialize($this->purchase($request, $purchase))]);
+    }
+
+    public function receive(Request $request, string $purchase, ReceivePurchasedItems $receiving, PostPurchase $posting): JsonResponse
+    {
+        $company = $request->attributes->get('company');
+        $today = CarbonImmutable::now($company->timezone)->toDateString();
+        $data = $request->validate([
+            'received_on' => ['required', 'date_format:Y-m-d', 'before_or_equal:'.$today],
+            'items' => ['required', 'array', 'list', 'min:1', 'max:100'],
+            'items.*' => ['array:line_id,quantity'],
+            'items.*.line_id' => ['required', 'uuid', 'distinct'],
+            'items.*.quantity' => ['required', 'numeric', 'gt:0', 'max:10000', 'decimal:0,4'],
+        ]);
+        $record = $this->purchase($request, $purchase);
+        $receiving->receive($company, $record, $data, $this->key($request));
+
+        return response()->json(['data' => $posting->serialize($record)]);
+    }
+
+    public function expenses(Request $request): JsonResponse
+    {
+        $rows = DB::table('purchase_expense_movements as m')
+            ->join('purchase_lines as l', 'l.id', '=', 'm.purchase_line_id')
+            ->join('purchases as p', 'p.id', '=', 'l.purchase_id')
+            ->join('products_services as i', 'i.id', '=', 'l.product_service_id')
+            ->where('m.company_id', $request->attributes->get('company')->id)
+            ->orderByDesc('m.received_on')->orderBy('m.id')
+            ->paginate(25, ['m.id', 'm.received_on', 'm.quantity', 'm.intended_use', 'm.cost_cents', 'i.name', 'p.purchase_number']);
+
+        return response()->json(['data' => $rows->items(), 'meta' => ['last_page' => $rows->lastPage()]]);
     }
 
     public function overview(Request $request): JsonResponse
