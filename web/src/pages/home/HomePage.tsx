@@ -12,13 +12,15 @@ export function HomePage() {
   return (
     <div className="w-full space-y-3.5 pb-2 lg:max-w-[83%] xl:max-w-[81%] 2xl:max-w-[1300px]">
       {/* Page Header */}
-      <header className="animate-home-header flex items-center gap-2.5 pt-0.5">
-        <img
-          src={welcomeIcon}
-          alt=""
-          aria-hidden="true"
-          className="size-8 shrink-0 object-contain sm:size-9"
-        />
+      <header className="animate-home-header flex items-center gap-3 pt-0.5">
+        <div className="flex size-11 shrink-0 items-center justify-center sm:size-12">
+          <img
+            src={welcomeIcon}
+            alt=""
+            aria-hidden="true"
+            className="size-10 shrink-0 object-contain drop-shadow-xs sm:size-11"
+          />
+        </div>
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
             Welcome to SimpleBIZ

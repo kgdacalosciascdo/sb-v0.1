@@ -90,8 +90,10 @@ const recentChanges = [
 export function SettingsPage() {
   return (
     <div className="w-full space-y-3.5 pb-4">
-      <header className="animate-settings-header flex items-center gap-2.5 pt-0.5">
-        <Settings aria-hidden="true" className="size-8 shrink-0 text-slate-600 sm:size-9" strokeWidth={2} />
+      <header className="animate-settings-header flex items-center gap-3 pt-0.5">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 sm:size-12">
+          <Settings aria-hidden="true" className="size-6 sm:size-7" strokeWidth={2} />
+        </div>
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">Settings & Administration</h1>
           <p className="text-xs text-slate-600 sm:text-[13px]">Manage your business, users, security, and system settings.</p>

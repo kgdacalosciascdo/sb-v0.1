@@ -112,13 +112,15 @@ export function PurchasesPage() {
     <div className="w-full space-y-5 pb-6">
       {/* Page Header */}
       <header className="animate-purchases-header flex flex-col gap-2 pt-0.5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2.5">
-          <img
-            src={truckIcon}
-            alt=""
-            aria-hidden="true"
-            className="size-8 shrink-0 object-contain sm:size-9"
-          />
+        <div className="flex items-center gap-3">
+          <div className="flex size-11 shrink-0 items-center justify-center sm:size-12">
+            <img
+              src={truckIcon}
+              alt=""
+              aria-hidden="true"
+              className="size-11 shrink-0 object-contain drop-shadow-xs sm:size-12 scale-[1.6]"
+            />
+          </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
               Purchases &amp; Suppliers
@@ -145,12 +147,10 @@ export function PurchasesPage() {
 
       {/* Row 1: Primary Action Cards (Cash Purchase, Credit Purchase, Pay Supplier) */}
       <section
-        className="animate-purchases-row-1 grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)]"
+        className="animate-purchases-row-1"
         aria-label="Purchases Primary Action Cards"
       >
-        <div className="min-w-0 xl:col-span-2">
-          <PurchasesActionCards />
-        </div>
+        <PurchasesActionCards />
       </section>
 
       {/* Row 2: Repositionable Cards Slot 1, 2, 3 */}
