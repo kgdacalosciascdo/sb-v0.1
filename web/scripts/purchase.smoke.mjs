@@ -212,6 +212,7 @@ await context.route('**/api/v1/demo/purchases**', async (route) => {
       ...l,
       ...products[i],
       product_id: l.product_id,
+      line_id: id(60 + i),
       gross_cents: gross[i],
       discount_cents: discounts[i],
       net_cents: gross[i] - discounts[i],
@@ -266,6 +267,13 @@ await context.route('**/api/v1/demo/purchases**', async (route) => {
       total: record ? 1 : 0,
     })
   if (path === id(99)) return send(record)
+  if (path === `${id(99)}/receiving`) {
+    const { items } = req.postDataJSON()
+    assert.deepEqual(items, [{ line_id: id(60), quantity: '1' }])
+    assert.match(req.headers()['idempotency-key'], /^[0-9a-f-]{36}$/)
+    record.totals.lines[0].received_quantity = '1'
+    return send(record)
+  }
   if (path === `${id(99)}/payments`) {
     const body = req.postDataJSON()
     assert.equal(body.amount, '9544.00')
@@ -304,25 +312,50 @@ try {
   await page.getByLabel('Supplier', { exact: true }).selectOption(supplier.id)
   await page.getByLabel('Purchase date', { exact: true }).fill('2026-10-08')
   await page.getByLabel('Supplier invoice number').fill('123456890')
+  await page
+    .getByLabel('Have you received the purchased goods?')
+    .selectOption('partial')
+  await page.getByRole('columnheader', { name: 'Qty Received' }).waitFor()
   for (const product of products) {
     await page.getByRole('button', { name: 'Add Item', exact: true }).click()
-    await page
-      .getByRole('button', {
-        name: new RegExp(product.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
-      })
-      .click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByLabel('Item ID').selectOption(product.id)
+    if (product.code === 'PRD-2003') {
+      await dialog.getByLabel('Quantity', { exact: true }).fill('2')
+      await dialog.getByLabel('Discount (%)').fill('5')
+      await dialog.getByLabel('Qty Received').fill('1')
+    }
+    if (product.code === 'PRD-3001')
+      await dialog.getByLabel('Quantity', { exact: true }).fill('4')
+    await dialog.getByRole('button', { name: 'Add Item', exact: true }).click()
   }
-  await page.getByLabel('Quantity for PRD-2003').fill('2')
-  await page.getByLabel('Discount for PRD-2003').fill('5')
-  await page.getByLabel('Quantity for PRD-3001').fill('4')
+  await page.getByRole('button', { name: 'Per-item Intended Use' }).click()
+  await page.getByRole('columnheader', { name: 'Intended Use' }).waitFor()
+  await page.getByRole('button', { name: 'Actions for PRD-3001' }).click()
+  await page.getByRole('button', { name: 'Change Intended Use' }).click()
+  await page
+    .getByRole('dialog')
+    .getByLabel('Intended Use')
+    .selectOption('administrative')
+  await page.getByRole('button', { name: 'Update Item' }).click()
+  await page.getByRole('cell', { name: 'For Administrative Support' }).waitFor()
+  await page.getByRole('button', { name: 'Actions for PRD-3001' }).click()
+  await page.getByRole('button', { name: 'Remove Item', exact: true }).click()
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Cancel', exact: true })
+    .click()
   await page.getByLabel('Payment reference', { exact: true }).fill('TRX-123')
   assert.match(await page.locator('.purchase-entry').innerText(), /19,544\.00/)
   await page.getByLabel('Purchase payment status').selectOption('partial')
   await page.getByLabel('Purchase amount paid').fill('10000.00')
   assert.match(await page.locator('.purchase-entry').innerText(), /9,544\.00/)
+  await page.evaluate(() => window.scrollTo(0, 0))
   await page.screenshot({ path: join(output, 'desktop.png'), fullPage: true })
   await page.getByLabel('Purchase payment status').selectOption('later')
-  await page.getByRole('button', { name: 'Add PDC', exact: false }).click()
+  await page
+    .getByRole('button', { name: 'Add / View PDC', exact: false })
+    .click()
   assert.equal(await page.getByLabel('PDC check date').count(), 1)
   await page.getByLabel('Purchase payment status').selectOption('full')
   await page.getByLabel('Purchase payment method').selectOption('Check')
@@ -341,7 +374,7 @@ try {
   await page.getByLabel('Payment reference', { exact: true }).fill('TRX-123')
   await page.getByLabel('Purchase payment status').selectOption('partial')
   await page.getByLabel('Purchase amount paid').fill('10000.00')
-  await page.getByRole('button', { name: 'Preview', exact: true }).click()
+  await page.getByRole('button', { name: 'Print Preview', exact: true }).click()
   await page.getByRole('dialog').waitFor()
   assert.match(await page.getByRole('dialog').innerText(), /19,544\.00/)
   assert.equal(posts, 0)
@@ -379,6 +412,17 @@ try {
     .click()
   await page.getByRole('dialog').waitFor()
   assert.match(await page.getByRole('dialog').innerText(), /PUR-000001/)
+  await page
+    .getByRole('button', { name: 'Record Delivery', exact: true })
+    .click()
+  await page
+    .getByLabel('Printer - LaserJet Pro (1 outstanding)', { exact: true })
+    .fill('1')
+  await page.getByRole('button', { name: 'Save Delivery', exact: true }).click()
+  await page
+    .getByRole('button', { name: 'Record Delivery', exact: true })
+    .waitFor()
+  assert.equal(record.totals.lines[0].received_quantity, '1')
   assert.equal(posts, 2)
   await page.getByRole('button', { name: 'Close dialog', exact: true }).click()
   // A delayed fetch must not imply the successfully posted credit balance is zero.
@@ -387,7 +431,9 @@ try {
     releaseOverview = resolve
   })
   const readsBefore = overviewReads
-  const started = new Promise(resolve => { overviewStarted = resolve })
+  const started = new Promise((resolve) => {
+    overviewStarted = resolve
+  })
   await page.goto(`${url}/purchases/payables`)
   await started
   await page
@@ -512,6 +558,8 @@ try {
     JSON.stringify({
       result: 'passed',
       checks: [
+        'line item dialogs, intended use, and receiving columns',
+        'later delivery against a saved purchase',
         'reference totals',
         'full/partial/later',
         'check date/PDC',

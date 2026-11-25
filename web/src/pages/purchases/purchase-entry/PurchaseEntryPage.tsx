@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Calculator,
@@ -10,15 +11,21 @@ import {
   Paperclip,
   Plus,
   Search,
-  Trash2,
+  Ellipsis,
+  PackageCheck,
+  TriangleAlert,
   X,
 } from 'lucide-react'
 import purchaseIcon from '../../../assets/icons/cashier.png'
 import { PaymentDialog } from '../../collections/receive-payment/PaymentDialog'
 import { PurchaseDocument } from './PurchaseDocument'
+import { PurchaseLineDialog } from './PurchaseLineDialog'
 import {
   addDays,
   calculate,
+  intendedUses,
+  receivingLabels,
+  type ReceivingMode,
   cents,
   decimal,
   peso,
@@ -51,6 +58,7 @@ function initialForm(mode: PaymentMode): PurchaseForm {
     due_date: addDays(today(), 30),
     reference: '',
     pdc: null,
+    receiving_mode: 'all',
   }
 }
 
@@ -69,6 +77,20 @@ export function PurchaseEntryPage() {
   const pending = useRef<{ body: string; key: string } | null>(null)
   const [uncertain, setUncertain] = useState(false)
   const [picker, setPicker] = useState(false)
+  const [editor, setEditor] = useState<{
+    index: number | null
+    initial?: PurchaseItem
+    useOnly?: boolean
+  } | null>(null)
+  const [menu, setMenu] = useState<{
+    index: number
+    x: number
+    y: number
+  } | null>(null)
+  const [removeIndex, setRemoveIndex] = useState<number | null>(null)
+  const [receivingHelp, setReceivingHelp] = useState(false)
+  const [pdcOpen, setPdcOpen] = useState(true)
+  const [showUse, setShowUse] = useState(false)
   const [search, setSearch] = useState('')
   const searchBox = useRef<HTMLInputElement>(null)
   const [infoOpen, setInfoOpen] = useState(true)
@@ -136,32 +158,19 @@ export function PurchaseEntryPage() {
     setForm((f) => ({ ...f, ...patch }))
     setNotice('')
   }
-  function line(index: number, patch: Partial<PurchaseItem>) {
-    setForm((f) => ({
-      ...f,
-      items: f.items.map((l, i) => (i === index ? { ...l, ...patch } : l)),
-    }))
-  }
   function add(product: Product) {
-    setForm((f) => ({
-      ...f,
-      items: f.items.some((l) => l.product_id === product.id)
-        ? f.items.map((l) =>
-            l.product_id === product.id
-              ? { ...l, quantity: String(Number(l.quantity) + 1) }
-              : l,
-          )
-        : [
-            ...f.items,
-            {
-              product_id: product.id,
-              quantity: '1',
-              unit_cost: product.cost,
-              discount_percent: '0',
-              tax_id: product.tax_id,
-            },
-          ],
-    }))
+    setEditor({
+      index: null,
+      initial: {
+        product_id: product.id,
+        quantity: '1',
+        unit_cost: product.cost,
+        discount_percent: '0',
+        tax_id: product.tax_id,
+        intended_use: 'sale',
+        received_quantity: '0',
+      },
+    })
     setSearch('')
     setPicker(false)
   }
@@ -188,6 +197,22 @@ export function PurchaseEntryPage() {
       return 'Enter the purchase date and supplier invoice number.'
     if (!form.items.length || total <= 0 || total > 9999999999)
       return 'Add purchased items with a valid positive total.'
+    if (form.notes.length > 250)
+      return 'Purchase notes must be 250 characters or fewer.'
+    if (form.receiving_mode === 'partial') {
+      const quantities = form.items.map((item) =>
+        Number(item.received_quantity || 0),
+      )
+      if (
+        quantities.some(
+          (qty, i) => qty < 0 || qty > Number(form.items[i].quantity),
+        ) ||
+        !quantities.some((qty) => qty > 0) ||
+        !quantities.some((qty, i) => qty < Number(form.items[i].quantity))
+      ) {
+        return 'Enter quantities received for a delivery with some items still outstanding.'
+      }
+    }
     if (
       form.items.some(
         (l) =>
@@ -239,7 +264,19 @@ export function PurchaseEntryPage() {
         due_date: due > 0 ? form.due_date : null,
         company: data.company,
         supplier,
-        totals,
+        totals: {
+          ...totals,
+          lines: totals.lines.map((item) => ({
+            ...item,
+            received_quantity:
+              form.receiving_mode === 'none'
+                ? '0'
+                : form.receiving_mode === 'partial'
+                  ? item.received_quantity || '0'
+                  : item.quantity,
+          })),
+        },
+        receiving_mode: form.receiving_mode || 'all',
         total_cents: total,
         paid_cents: paid,
         due_cents: due,
@@ -489,17 +526,23 @@ export function PurchaseEntryPage() {
                     <PackagePlus size={21} className="pe-gold-icon" />
                     Items Purchased
                   </h2>
-                  <button
-                    onClick={() => {
-                      setPicker(true)
-                      searchBox.current?.focus()
-                    }}
-                  >
-                    <Plus size={13} /> Add Item
-                  </button>
+                  <div className="pe-item-tools">
+                    <button
+                      className="pe-inline-link"
+                      aria-pressed={showUse}
+                      onClick={() => setShowUse(!showUse)}
+                    >
+                      {showUse ? 'Hide Intended Use' : 'Per-item Intended Use'}
+                    </button>
+                    <button onClick={() => setEditor({ index: null })}>
+                      <Plus size={13} /> Add Item
+                    </button>
+                  </div>
                 </div>
                 <div className="pe-table-scroll">
-                  <table className="pe-items">
+                  <table
+                    className={`pe-items ${showUse || form.receiving_mode === 'partial' ? 'pe-items-expanded' : ''}`}
+                  >
                     <thead>
                       <tr>
                         <th>#</th>
@@ -510,8 +553,12 @@ export function PurchaseEntryPage() {
                         <th>Disc %</th>
                         <th>Tax</th>
                         <th>Amount</th>
+                        {form.receiving_mode === 'partial' && (
+                          <th>Qty Received</th>
+                        )}
+                        {showUse && <th>Intended Use</th>}
                         <th>
-                          <span className="sr-only">Remove item</span>
+                          <span className="sr-only">Item actions</span>
                         </th>
                       </tr>
                     </thead>
@@ -523,83 +570,52 @@ export function PurchaseEntryPage() {
                             <small>{l.code}</small>
                             <strong>{l.name}</strong>
                           </td>
-                          <td>
-                            <input
-                              aria-label={`Quantity for ${l.code}`}
-                              type="number"
-                              min="0.0001"
-                              max="10000"
-                              step="0.0001"
-                              value={l.quantity}
-                              onChange={(e) =>
-                                line(i, { quantity: e.target.value })
-                              }
-                            />
-                          </td>
+                          <td>{l.quantity}</td>
                           <td>{l.unit}</td>
-                          <td>
-                            <input
-                              aria-label={`Unit cost for ${l.code}`}
-                              type="number"
-                              min="0"
-                              max="99999999.99"
-                              step="0.01"
-                              value={l.unit_cost}
-                              onChange={(e) =>
-                                line(i, { unit_cost: e.target.value })
-                              }
-                            />
-                          </td>
-                          <td>
-                            <input
-                              aria-label={`Discount for ${l.code}`}
-                              type="number"
-                              min="0"
-                              max="100"
-                              step="0.01"
-                              value={l.discount_percent}
-                              onChange={(e) =>
-                                line(i, { discount_percent: e.target.value })
-                              }
-                            />
-                          </td>
-                          <td>
-                            <select
-                              aria-label={`Tax for ${l.code}`}
-                              value={l.tax_id || ''}
-                              onChange={(e) =>
-                                line(i, { tax_id: e.target.value || null })
-                              }
-                            >
-                              <option value="">None</option>
-                              {data.taxes.map((t) => (
-                                <option key={t.id} value={t.id}>
-                                  {t.rate_basis_points / 100}%
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td>
+                          <td>{peso(cents(l.unit_cost))}</td>
+                          <td>{l.discount_percent}</td>
+                          <td>{l.tax_name}</td>
+                          <td className="pe-line-amount">
                             <strong>{peso(l.net_cents)}</strong>
                           </td>
+                          {form.receiving_mode === 'partial' && (
+                            <td>{l.received_quantity || '0'}</td>
+                          )}
+                          {showUse && (
+                            <td>{intendedUses[l.intended_use || 'sale']}</td>
+                          )}
                           <td>
                             <button
                               className="pe-icon-button"
-                              aria-label={`Remove ${l.code}`}
-                              onClick={() =>
-                                update({
-                                  items: form.items.filter((_, n) => n !== i),
+                              aria-label={`Actions for ${l.code}`}
+                              onClick={(event) => {
+                                const rect =
+                                  event.currentTarget.getBoundingClientRect()
+                                setMenu({
+                                  index: i,
+                                  x: Math.max(8, rect.right - 205),
+                                  y: Math.min(
+                                    rect.bottom,
+                                    window.innerHeight - 122,
+                                  ),
                                 })
-                              }
+                              }}
                             >
-                              <Trash2 size={15} />
+                              <Ellipsis size={17} />
                             </button>
                           </td>
                         </tr>
                       ))}
                       {!form.items.length && (
                         <tr>
-                          <td colSpan={9} className="pe-empty">
+                          <td
+                            colSpan={
+                              9 +
+                              Number(showUse) +
+                              Number(form.receiving_mode === 'partial')
+                            }
+                            className="pe-empty"
+                          >
                             Search below or add an item to start your purchase.
                           </td>
                         </tr>
@@ -654,56 +670,90 @@ export function PurchaseEntryPage() {
                   )}
                 </div>
               </section>
-              <section className="pe-panel">
-                <div className="pe-section-head">
-                  <h2>
-                    <MessageSquare size={20} className="pe-gold-icon" />
-                    Notes &amp; Attachment
-                  </h2>
-                </div>
-                <div className="pe-notes-grid">
-                  <div className="pe-notes-field">
-                    <textarea
-                      aria-label="Purchase notes"
-                      maxLength={500}
-                      rows={3}
-                      value={form.notes}
-                      onChange={(e) => update({ notes: e.target.value })}
-                    />
-                    <span>{form.notes.length}/500</span>
+              <div className="pe-receiving-row">
+                <section className="pe-panel">
+                  <div className="pe-section-head">
+                    <h2>
+                      <MessageSquare size={20} className="pe-gold-icon" />
+                      Notes &amp; Attachment
+                    </h2>
                   </div>
-                  <div className="pe-attachment">
-                    <Paperclip size={20} />
-                    <div>
-                      <span>
-                        Attachment:{' '}
-                        {form.attachments[0]?.name || '[ File Name ]'}
-                      </span>
-                      <small>[Max 10 MB]</small>
-                      {form.attachments.length > 0 && (
-                        <button
-                          className="pe-inline-link"
-                          onClick={() => update({ attachments: [] })}
-                        >
-                          Remove attachment
-                        </button>
-                      )}
-                    </div>
-                    <label className="pe-file-button">
-                      Attach File
-                      <input
-                        aria-label="Attach purchase file"
-                        type="file"
-                        accept="image/png,image/jpeg,application/pdf"
-                        onChange={(e) => {
-                          void attach(e.target.files?.[0])
-                          e.target.value = ''
-                        }}
+                  <div className="pe-notes-grid">
+                    <div className="pe-notes-field">
+                      <textarea
+                        aria-label="Purchase notes"
+                        placeholder="Notes / remarks…"
+                        maxLength={250}
+                        rows={3}
+                        value={form.notes}
+                        onChange={(e) => update({ notes: e.target.value })}
                       />
-                    </label>
+                      <span>{form.notes.length}/250</span>
+                    </div>
+                    <div className="pe-attachment">
+                      <Paperclip size={20} />
+                      <div>
+                        <span>
+                          Attachment:{' '}
+                          {form.attachments[0]?.name || '[ File Name ]'}
+                        </span>
+                        <small>[Max 10 MB]</small>
+                        {form.attachments.length > 0 && (
+                          <button
+                            className="pe-inline-link"
+                            onClick={() => update({ attachments: [] })}
+                          >
+                            Remove attachment
+                          </button>
+                        )}
+                      </div>
+                      <label className="pe-file-button">
+                        Attach File
+                        <input
+                          aria-label="Attach purchase file"
+                          type="file"
+                          accept="image/png,image/jpeg,application/pdf"
+                          onChange={(e) => {
+                            void attach(e.target.files?.[0])
+                            e.target.value = ''
+                          }}
+                        />
+                      </label>
+                    </div>
                   </div>
-                </div>
-              </section>
+                </section>
+                <section className="pe-panel pe-receiving">
+                  <h2>
+                    <PackageCheck size={21} className="pe-gold-icon" />{' '}
+                    Receiving
+                  </h2>
+                  <label htmlFor="purchase-receiving">
+                    Have you received the purchased goods?
+                  </label>
+                  <button
+                    className="pe-icon-button"
+                    aria-label="About purchase receiving"
+                    onClick={() => setReceivingHelp(true)}
+                  >
+                    <Info size={15} />
+                  </button>
+                  <select
+                    id="purchase-receiving"
+                    value={form.receiving_mode || 'all'}
+                    onChange={(event) =>
+                      update({
+                        receiving_mode: event.target.value as ReceivingMode,
+                      })
+                    }
+                  >
+                    {Object.entries(receivingLabels).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </section>
+              </div>
             </div>
             <aside className="pe-side">
               <section className="pe-panel pe-payment">
@@ -864,24 +914,30 @@ export function PurchaseEntryPage() {
                 {form.payment_mode === 'later' && (
                   <div className="pe-pdc">
                     <p>Have a post-dated check?</p>
-                    {!form.pdc ? (
-                      <button
-                        onClick={() =>
-                          update({
-                            pdc: {
-                              account_id: compatible('Check')[0]?.id || '',
-                              check_number: '',
-                              check_date:
-                                form.due_date ||
-                                addDays(form.purchase_date, 30),
-                              amount: decimal(total),
-                            },
-                          })
+                    <button
+                      aria-expanded={!!form.pdc && pdcOpen}
+                      onClick={() => {
+                        if (form.pdc) {
+                          setPdcOpen(!pdcOpen)
+                          return
                         }
-                      >
-                        + Add PDC
-                      </button>
-                    ) : (
+                        setPdcOpen(true)
+                        update({
+                          pdc: {
+                            account_id: compatible('Check')[0]?.id || '',
+                            check_number: '',
+                            check_date:
+                              form.due_date || addDays(form.purchase_date, 30),
+                            amount: decimal(total),
+                          },
+                        })
+                      }}
+                    >
+                      {form.pdc && pdcOpen
+                        ? 'Hide PDC Details'
+                        : '+ Add / View PDC'}
+                    </button>
+                    {form.pdc && pdcOpen && (
                       <>
                         <label>
                           Paid From
@@ -1003,6 +1059,9 @@ export function PurchaseEntryPage() {
                   <strong>{peso(due)}</strong>
                 </div>
               </section>
+              <button className="pe-transaction-preview" onClick={preview}>
+                Transaction Preview ›
+              </button>
             </aside>
           </fieldset>
           <footer className="pe-footer">
@@ -1028,7 +1087,7 @@ export function PurchaseEntryPage() {
               Save as Draft
             </button>
             <button disabled={busy || uncertain} onClick={preview}>
-              Preview
+              Print Preview
             </button>
             <button
               className="pe-primary"
@@ -1062,6 +1121,137 @@ export function PurchaseEntryPage() {
             </button>
           </div>
         </>
+      )}
+      {menu &&
+        createPortal(
+          <>
+            <button
+              className="pe-menu-dismiss"
+              aria-label="Close item actions"
+              onClick={() => setMenu(null)}
+            />
+            <div
+              className="pe-item-menu"
+              style={{ left: menu.x, top: menu.y }}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') setMenu(null)
+              }}
+            >
+              <button
+                autoFocus
+                onClick={() => {
+                  setEditor({
+                    index: menu.index,
+                    initial: form.items[menu.index],
+                  })
+                  setMenu(null)
+                }}
+              >
+                View/Edit Item Details
+              </button>
+              <button
+                onClick={() => {
+                  setEditor({
+                    index: menu.index,
+                    initial: form.items[menu.index],
+                    useOnly: true,
+                  })
+                  setMenu(null)
+                }}
+              >
+                Change Intended Use
+              </button>
+              <button
+                onClick={() => {
+                  setRemoveIndex(menu.index)
+                  setMenu(null)
+                }}
+              >
+                Remove Item
+              </button>
+            </div>
+          </>,
+          window.document.body,
+        )}
+      {data && editor && (
+        <PurchaseLineDialog
+          data={data}
+          initial={editor.initial}
+          editing={editor.index !== null}
+          useOnly={!!editor.useOnly}
+          partial={form.receiving_mode === 'partial'}
+          onClose={() => setEditor(null)}
+          onRemove={
+            editor.index === null || editor.useOnly
+              ? undefined
+              : () => {
+                  setRemoveIndex(editor.index)
+                  setEditor(null)
+                }
+          }
+          onSave={(item) => {
+            update({
+              items:
+                editor.index === null
+                  ? [...form.items, item]
+                  : form.items.map((old, i) =>
+                      i === editor.index ? item : old,
+                    ),
+            })
+            setEditor(null)
+          }}
+        />
+      )}
+      {removeIndex !== null && (
+        <PaymentDialog
+          title="Remove Item"
+          className="pe-dialog"
+          onClose={() => setRemoveIndex(null)}
+        >
+          <p className="pe-remove-message">
+            <TriangleAlert size={25} /> Remove this item from the purchase?
+          </p>
+          <div className="collection-dialog-actions">
+            <button onClick={() => setRemoveIndex(null)}>Cancel</button>
+            <button
+              className="primary"
+              onClick={() => {
+                update({
+                  items: form.items.filter((_, i) => i !== removeIndex),
+                })
+                setRemoveIndex(null)
+              }}
+            >
+              Remove Item
+            </button>
+          </div>
+        </PaymentDialog>
+      )}
+      {receivingHelp && (
+        <PaymentDialog
+          title="Receiving purchased goods"
+          className="pe-dialog"
+          onClose={() => setReceivingHelp(false)}
+        >
+          <dl className="pe-receiving-help">
+            <dt>All Received</dt>
+            <dd>
+              Records every purchased quantity as received when you save. The
+              item and its intended use determine the inventory or expense
+              treatment.
+            </dd>
+            <dt>Not Yet Received</dt>
+            <dd>Keeps all quantities outstanding for a later delivery.</dd>
+            <dt>Partially Received</dt>
+            <dd>
+              Shows Qty Received in the table. Use View/Edit Item Details to
+              enter each delivered quantity.
+            </dd>
+          </dl>
+          <div className="collection-dialog-actions">
+            <button onClick={() => setReceivingHelp(false)}>Done</button>
+          </div>
+        </PaymentDialog>
       )}
       {document && (
         <PurchaseDocument

@@ -13,6 +13,6 @@ class PurchaseLine extends Model
 
     protected function casts(): array
     {
-        return ['quantity' => 'decimal:4', 'snapshot' => 'array'];
+        return ['quantity' => 'decimal:4', 'received_quantity' => 'decimal:4', 'snapshot' => 'array'];
     }
 }

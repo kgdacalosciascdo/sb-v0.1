@@ -1,4 +1,17 @@
 export type PaymentMode = 'full' | 'partial' | 'later'
+export const receivingLabels = {
+  all: 'All Received',
+  none: 'Not Yet Received',
+  partial: 'Partially Received',
+}
+export type ReceivingMode = keyof typeof receivingLabels
+export const intendedUses = {
+  sale: 'For Sale',
+  production: 'For Production',
+  service: 'For Service Delivery',
+  administrative: 'For Administrative Support',
+}
+export type IntendedUse = keyof typeof intendedUses
 export interface Supplier {
   id: string
   name: string
@@ -33,6 +46,8 @@ export interface PurchaseBootstrap {
   next_number: string
 }
 export interface PurchaseItem {
+  intended_use?: IntendedUse
+  received_quantity?: string
   product_id: string
   quantity: string
   unit_cost: string
@@ -51,6 +66,7 @@ export interface Pdc {
   amount: string
 }
 export interface PurchaseForm {
+  receiving_mode?: ReceivingMode
   draft_id?: string
   supplier_id: string
   purchase_date: string
@@ -67,6 +83,7 @@ export interface PurchaseForm {
   pdc: Pdc | null
 }
 export interface CalculatedLine extends PurchaseItem {
+  line_id?: string
   code: string
   name: string
   unit: string
@@ -86,6 +103,7 @@ export interface Totals {
   total_cents: number
 }
 export interface PurchaseRecord {
+  receiving_mode?: ReceivingMode
   id: string
   purchase_number: string
   purchase_date: string
@@ -134,6 +152,7 @@ export type PurchaseRow = Pick<
   | 'due_cents'
   | 'due_date'
   | 'postdated_check'
+  | 'receiving_mode'
 >
 export interface Payable {
   id: string

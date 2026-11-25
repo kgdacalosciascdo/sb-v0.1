@@ -3,6 +3,7 @@ import { RotateCcw } from 'lucide-react'
 import walletIcon from '../../assets/icons/wallet.png'
 import './expenses.css'
 import { ExpensesActionCards } from './components/ExpensesActionCards'
+import { PurchaseExpensesPanel } from '../purchases/purchase-entry/PurchaseExpensesPanel'
 import { ExpensesNeedsAttentionCard } from './components/ExpensesNeedsAttentionCard'
 import { ExpensesOverviewCard } from './components/ExpensesOverviewCard'
 import { ExpensesMoreActionsCard } from './components/ExpensesMoreActionsCard'
@@ -144,6 +145,7 @@ export function ExpensesPage() {
           </button>
         )}
       </header>
+      <PurchaseExpensesPanel />
 
       {/* Row 1: Primary Action Cards (Record Expense, Pay Expense) */}
       <section

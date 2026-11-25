@@ -73,6 +73,53 @@ class PurchaseApiTest extends TestCase
         $this->getJson($this->url.'/overview')->assertJsonPath('data.outstanding_cents', 954400)->assertJsonPath('data.suppliers.0.outstanding_cents', 954400)->assertJsonCount(1, 'data.payables');
     }
 
+    public function test_reference_partial_receipt_and_later_delivery_keep_payables_separate(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-25 10:00:00'));
+        $data = $this->payload('later');
+        $data['receiving_mode'] = 'partial';
+        $data['items'][1]['received_quantity'] = '1';
+        $data['items'][2] = [...$data['items'][2], 'quantity' => '100', 'unit_cost' => '50', 'intended_use' => 'service', 'received_quantity' => '100'];
+        $data['items'][3] = [...$data['items'][3], 'intended_use' => 'administrative', 'received_quantity' => '4'];
+        $posted = $this->postPurchase($data)->assertCreated()
+            ->assertJsonPath('data.total_cents', 2178400)->assertJsonPath('data.due_cents', 2178400)
+            ->assertJsonPath('data.receiving_mode', 'partial')->assertJsonPath('data.totals.lines.1.received_quantity', '1.0000');
+        $this->assertDatabaseCount('inventory_movements', 2);
+        $this->assertDatabaseHas('purchase_expense_movements', ['intended_use' => 'administrative', 'cost_cents' => 120000]);
+        $this->getJson($this->url.'?awaiting_delivery=1')->assertJsonPath('data.0.receiving_mode', 'partial');
+        $this->getJson($this->url.'/expenses')->assertOk()->assertJsonCount(1, 'data');
+        $url = $this->url.'/'.$posted->json('data.id').'/receiving';
+        $line = $posted->json('data.totals.lines.1.line_id');
+        $receipt = ['received_on' => '2026-11-25', 'items' => [['line_id' => $line, 'quantity' => '1']]];
+        $headers = ['Idempotency-Key' => (string) Str::uuid()];
+        $this->postJson($url, $receipt, $headers)->assertOk()->assertJsonPath('data.totals.lines.1.received_quantity', '2.0000');
+        $this->postJson($url, $receipt, $headers)->assertOk();
+        $this->postJson($url, $receipt, ['Idempotency-Key' => (string) Str::uuid()])->assertUnprocessable();
+        $this->assertDatabaseCount('inventory_movements', 3);
+        $this->assertEquals(475000, DB::table('inventory_movements')->where('purchase_line_id', $line)->sum('cost_cents'));
+        $receipt['items'][0]['line_id'] = $posted->json('data.totals.lines.0.line_id');
+        $this->postJson($url, $receipt, $headers)->assertConflict();
+        $this->postJson($url, $receipt, ['Idempotency-Key' => (string) Str::uuid()])->assertOk()
+            ->assertJsonPath('data.receiving_mode', 'all')->assertJsonPath('data.due_cents', 2178400);
+        $this->assertDatabaseCount('supplier_payments', 0);
+        $this->getJson($this->url.'?awaiting_delivery=1')->assertJsonPath('meta.total', 0);
+    }
+
+    public function test_not_received_and_invalid_partial_quantities(): void
+    {
+        $data = $this->payload();
+        $data['receiving_mode'] = 'partial';
+        $data['items'][0]['received_quantity'] = '2';
+        $this->postPurchase($data)->assertUnprocessable();
+        $data['items'][0]['received_quantity'] = '0';
+        $this->postPurchase($data)->assertUnprocessable();
+        $data['receiving_mode'] = 'none';
+        $this->postPurchase($data)->assertCreated()->assertJsonPath('data.receiving_mode', 'none');
+        $this->assertDatabaseCount('inventory_movements', 0);
+        $this->assertDatabaseCount('purchase_expense_movements', 0);
+        $this->assertDatabaseCount('supplier_payments', 1);
+    }
+
     public function test_pay_later_creates_obligation_without_cash_movement(): void
     {
         $this->postPurchase($this->payload('later'))->assertCreated()->assertJsonPath('data.paid_cents', 0)->assertJsonPath('data.due_cents', 1954400);

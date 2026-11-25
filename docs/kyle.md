@@ -1,3 +1,9 @@
+## 2026-11-25 — Purchase entry and receiving
+
+- Implemented the updated purchase entry with line-item dialogs, per-item intended use, receiving modes and print preview. Purchase History includes an Awaiting Delivery filter and follow-up deliveries.
+- Added the purchase receiving migration and API. Received quantities feed Inventory or the Expenses from Purchases panel. The purchase and payment totals remain independent of delivery.
+- See [Purchases & Suppliers](kyle-md/purchases.md) for receiving rules and rollout.
+
 ## 2026-10-08 — Purchases frontend, API, and Supabase integration
 
 - Follow-up: fixed premature empty payables/history states; added independent read loading, Refresh / Retry, GET request deduplication and bounded rate-limit/network read retries (no automatic write retries). Skipped unused history reads on Payables. Added delayed/error/429 browser coverage; live bootstrap currently returns 200 with correct Vercel CORS. See the purchase handoff follow-up; no DB/backend changes or Jhonel edits. Vercel redeployment is required.

@@ -1,5 +1,15 @@
 # Purchases & Suppliers — implementation handoff
 
+## November 25, 2026 receiving update
+
+The entry form defaults to All Received. Not Yet Received keeps every line outstanding. Partially Received enables quantity fields in Line Item Details and shows Qty Received in the table. The Intended Use column can be toggled independently. Open a saved record from Purchase History to record another delivery. The Awaiting Delivery filter finds records with outstanding quantities.
+
+Inventory-tracked goods for sale, production, or service delivery enter inventory when received. Administrative-use and non-stock lines appear in Expenses from Purchases as received, at discounted cost before tax. Supplier balances and payments still follow the posted invoice. Previously posted lines are treated as fully received and keep their original movements.
+
+The existing purchase and draft payloads accept `receiving_mode` and per-line `received_quantity` and `intended_use`. A subsequent delivery uses `POST /api/v1/demo/purchases/{purchase}/receiving` with `received_on` and an `items` list containing `line_id` and `quantity`. Send a UUID in the `Idempotency-Key` header. Receiving quantities and movement records are committed together. The API rejects over-receiving and replays the same request safely.
+
+Roll out `2026_11_25_000700_add_purchase_receiving` to the target PostgreSQL database with `php artisan migrate --force`, then deploy Laravel and the frontend. Run `php artisan simplebiz:seed-purchases` only where sample payment account options are wanted.
+
 Updated: 2026-10-08. Owner: Kyle. Coordination: read `docs/jhonel.md` (empty) and `docs/jhonel-md/purchases.md`; neither was changed. Jhonel's landing card layout, drag order, collapse behavior, icons, and existing shell were retained.
 
 ## 2026-10-08 follow-up — loading and transient request failures
